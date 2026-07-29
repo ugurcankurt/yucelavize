@@ -13,6 +13,8 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { ProductCard } from "@/components/storefront/product-card";
+import { HeroSlider } from "@/components/storefront/hero-slider";
+
 export default async function Home() {
   const supabase = await createClient();
   const { data: newArrivals } = await supabase
@@ -25,6 +27,13 @@ export default async function Home() {
     .select("id, name, slug, image_url")
     .order("name", { ascending: true })
     .limit(7);
+
+  // Fetch active hero slides
+  const { data: slides } = await supabase
+    .from("hero_slides")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
   
   // Fetch active campaign
   const { data: activeCampaign } = await supabase
@@ -50,48 +59,8 @@ export default async function Home() {
   return (
     <div className="flex flex-col flex-1 w-full font-sans bg-background">
       {/* 1. Hero Section */}
-      <section className="w-full pt-6 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-[32px] overflow-hidden bg-muted flex items-center">
-            <div className="absolute inset-0">
-              <Image
-                src="https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=2000&auto=format&fit=crop"
-                alt="Evinizin Işıltısı"
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover opacity-80"
-              />
-            </div>
-            <div className="relative z-10 p-10 md:p-24 flex flex-col items-start w-full h-full">
-              <h1 className="text-5xl md:text-[80px] font-black tracking-tight text-primary leading-[1.1] drop-shadow-lg max-w-2xl">
-                Evinizin <br />
-                Işıltısı
-              </h1>
-              <p className="mt-auto uppercase tracking-widest text-xs font-bold text-foreground drop-shadow-md flex flex-col gap-1">
-                <span>Premium Seri</span> <span>Avize Modelleri</span>
-              </p>
-              <div className="absolute bottom-10 right-10 flex flex-col items-end gap-10">
-                <div className="hidden md:block uppercase text-xs font-bold tracking-[0.2em] text-foreground rotate-90 origin-right drop-shadow-md">
-                  Özel Tasarım
-                </div>
-                <Link
-                  href="/products"
-                  className="text-foreground hover:text-primary font-semibold text-sm transition-colors flex items-center gap-1 drop-shadow-md"
-                >
-                  Tümünü Gör <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              {/* Dot Indicators */}
-              <div className="absolute bottom-10 left-10 flex gap-2">
-                <div className="w-8 h-1.5 rounded-full bg-primary"></div>
-                <div className="w-2 h-1.5 rounded-full bg-background/50"></div>
-                <div className="w-2 h-1.5 rounded-full bg-background/50"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSlider slides={slides || []} />
+      
       {/* 2. Shop by Category */}
       <section className="w-full py-16">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
