@@ -154,7 +154,7 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
                   if (searchQuery.trim().length > 1) setShowResults(true);
                 }}
                 placeholder="Ne aramıştınız?"
-                className="flex-1 h-full bg-transparent pr-4 outline-none text-[15px] text-foreground placeholder:text-muted-foreground"
+                className="flex-1 h-full bg-transparent pr-4 outline-none text-[16px] lg:text-[15px] text-foreground placeholder:text-muted-foreground"
               />
             </form>
 
@@ -418,7 +418,7 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
                 if (searchQuery.trim().length > 1) setShowResults(true);
               }}
               placeholder="Ürün veya marka ara..."
-              className="flex-1 h-full bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground ml-3 min-w-0"
+              className="flex-1 h-full bg-transparent outline-none text-[16px] md:text-[14px] text-foreground placeholder:text-muted-foreground ml-3 min-w-0"
             />
           </form>
 
