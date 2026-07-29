@@ -127,10 +127,10 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />{" "}
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        {" "}
-        {/* Breadcrumb Navigation */}{" "}
-        <nav className="flex items-center text-sm text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap pb-2">
+      <div className="w-full pb-40 lg:pb-12">
+        {/* Breadcrumb Navigation - Desktop Only */}
+        <div className="container mx-auto px-4 mt-8 md:mt-12 hidden lg:block">
+          <nav className="flex items-center text-sm text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap pb-2">
           {" "}
           <Link
             href="/"
@@ -151,22 +151,23 @@ export default async function ProductDetailPage({
           <span className="font-medium text-foreground truncate">
             {product.name}
           </span>{" "}
-        </nav>{" "}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-          {" "}
-          {/* Interactive Image Gallery */}{" "}
-          <div className="w-full lg:sticky lg:top-24 h-max">
-            {" "}
+          </nav>
+        </div>
+        
+        <div className="container mx-auto px-0 lg:px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-20">
+            {/* Interactive Image Gallery */}
+          <div id="product-gallery" className="w-full -mt-8 lg:mt-0 lg:sticky lg:top-24 h-max relative z-0">
             <ProductGallery
               images={images}
               productName={product.name}
               productId={product.id}
               initialIsFavorite={isFavorite}
               colorMapping={product.features?.colorMapping}
-            />{" "}
-          </div>{" "}
-          {/* Product Info */}{" "}
-          <div className="flex flex-col pt-2 animate-in fade-in slide-in-from-right-8 duration-700">
+            />
+          </div>
+          {/* Product Info */}
+          <div className="flex flex-col px-4 lg:px-0 pt-6 lg:pt-2 animate-in fade-in duration-700">
             {" "}
             <div className="mb-6 flex gap-2">
               {" "}
@@ -268,11 +269,11 @@ export default async function ProductDetailPage({
               height={product.features?.dimensions?.height}
               depth={product.features?.dimensions?.depth}
             />{" "}
-            {/* Accordion Details */}{" "}
-            <ProductDetailsAccordion description={product.description} />{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
+            <ProductDetailsAccordion description={product.description} />
+          </div>
+        </div>
+      </div>
+      </div>
     </>
   );
 }

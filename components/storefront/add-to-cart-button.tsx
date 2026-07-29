@@ -8,18 +8,30 @@ interface AddToCartButtonProps {
   product: ProductType;
   selectedColor?: string;
   disabled?: boolean;
+  className?: string;
+  iconOnly?: boolean;
+  onAdded?: () => void;
 }
 export function AddToCartButton({
   product,
   selectedColor,
   disabled,
+  className,
+  iconOnly,
+  onAdded,
 }: AddToCartButtonProps) {
   const cart = useCart();
   const [isAdded, setIsAdded] = useState(false);
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (disabled) return;
     cart.addItem(product, 1, selectedColor);
     setIsAdded(true);
+    
+    if (onAdded) {
+      onAdded();
+    }
+    
     toast.add({
       title: "Sepete Eklendi",
       description: `${product.name} ${selectedColor ? `(${selectedColor}) ` : ""}sepetinize başarıyla eklendi.`,
@@ -31,21 +43,21 @@ export function AddToCartButton({
   };
   return (
     <Button
-      size="lg"
+      size={iconOnly ? "icon" : "lg"}
       onClick={handleAddToCart}
       disabled={disabled}
-      className={`h-14 text-lg w-full transition-all ${isAdded ? "bg-success text-background hover:bg-success/90" : "bg-foreground text-background hover:bg-foreground/90"}`}
+      className={`${iconOnly ? "w-12 h-12 rounded-full" : "h-14 text-lg w-full"} transition-all ${isAdded ? "bg-success text-success-foreground hover:bg-success/90" : "bg-primary text-primary-foreground hover:bg-primary/90"} ${className || ""}`}
     >
       {" "}
       {isAdded ? (
         <>
           {" "}
-          <Check className="mr-2 w-5 h-5" /> Sepete Eklendi{" "}
+          <Check className={iconOnly ? "w-5 h-5" : "mr-2 w-5 h-5"} /> {!iconOnly && "Sepete Eklendi"}{" "}
         </>
       ) : (
         <>
           {" "}
-          <ShoppingCart className="mr-2 w-5 h-5" /> Sepete Ekle{" "}
+          <ShoppingCart className={iconOnly ? "w-5 h-5" : "mr-2 w-5 h-5"} /> {!iconOnly && "Sepete Ekle"}{" "}
         </>
       )}{" "}
     </Button>

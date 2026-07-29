@@ -1,6 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FavoriteButton } from "@/components/storefront/favorite-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Star } from "lucide-react";
+
 interface ProductCardProps {
   product: any;
   isFavorite: boolean;
@@ -46,86 +50,88 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group flex flex-col relative"
+      className="group block"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted border border-border mb-5">
-        <Image
-          src={primaryImage}
-          alt={product.name}
-          fill
-          priority={priority}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        {/* Favorite Button */}
-        <div className="absolute top-3 right-3 z-10">
-          <FavoriteButton
-            productId={product.id}
-            initialIsFavorite={isFavorite}
-            className="w-9 h-9"
-            iconClassName="w-4 h-4"
+      <Card className="overflow-hidden border-transparent bg-card shadow-sm hover:shadow-md transition-all duration-300 rounded-[20px] p-3 sm:p-4">
+        <div className="relative w-full aspect-square overflow-hidden rounded-[16px] bg-muted/50 mb-3 sm:mb-4 flex items-center justify-center">
+          <Image
+            src={primaryImage}
+            alt={product.name}
+            fill
+            priority={priority}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            className="object-cover p-2 sm:p-0 sm:object-cover transition-transform duration-700 group-hover:scale-105"
           />
-        </div>
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {product.stock <= 5 && product.stock > 0 && (
-            <div className="bg-warning text-warning-foreground text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-full shadow-md w-max">
-              Son {product.stock}
+          
+          {/* Favorite Button (Floating Top Right inside image area, or just top right of card) */}
+          <div className="absolute top-2 right-2 z-10">
+            <FavoriteButton
+              productId={product.id}
+              initialIsFavorite={isFavorite}
+              className="w-8 h-8 sm:w-9 sm:h-9 shadow-sm bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center text-gray-400"
+              iconClassName="w-4 h-4"
+            />
+          </div>
+
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
+            {product.stock <= 5 && product.stock > 0 && (
+              <Badge variant="destructive" className="shadow-sm text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1">
+                Son {product.stock}
+              </Badge>
+            )}
+            {hasDiscount && (
+              <Badge className="shadow-sm bg-rose-500 hover:bg-rose-600 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 text-white">
+                {discountBadge}
+              </Badge>
+            )}
+          </div>
+
+          {/* Out of stock */}
+          {product.stock === 0 && (
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+              <Badge variant="secondary" className="px-3 py-1 text-xs sm:text-sm uppercase tracking-wider font-bold shadow-md bg-white border border-gray-200">
+                Tükendi
+              </Badge>
             </div>
           )}
-          {hasDiscount && (
-            <div className="bg-destructive text-destructive-foreground text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded-full shadow-md w-max">
-              {discountBadge}
-            </div>
-          )}
         </div>
-        {/* Out of stock */}
-        {product.stock === 0 && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-10">
-            <span className="bg-foreground text-background text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-lg">
-              Tükendi
+
+        <CardContent className="p-0 flex flex-col">
+          <h3 className="font-bold text-[14px] sm:text-base text-foreground line-clamp-1 mb-1 group-hover:text-primary transition-colors duration-300">
+            {product.name}
+          </h3>
+          
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground">
+              {catName}
             </span>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-[11px] sm:text-[12px] font-bold text-foreground">4.9</span>
+            </div>
           </div>
-        )}
-        {/* Hover Add to cart button preview */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 w-[90%] z-10">
-          <div className="w-full h-10 bg-background/90 backdrop-blur-md rounded-full text-foreground font-semibold text-sm flex items-center justify-center shadow-lg border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors cursor-pointer">
-            İncele
+
+          <div className="flex items-center justify-between mt-auto">
+            <div className="flex flex-col">
+              {hasDiscount ? (
+                 <div className="flex items-center gap-1.5 sm:gap-2">
+                   <p className="font-black text-[15px] sm:text-lg text-foreground">
+                     ₺{finalPrice.toLocaleString("tr-TR")}
+                   </p>
+                   <p className="text-[10px] sm:text-[11px] text-muted-foreground line-through decoration-muted-foreground/50">
+                     ₺{product.price.toLocaleString("tr-TR")}
+                   </p>
+                 </div>
+              ) : (
+                <p className="font-black text-[15px] sm:text-lg text-foreground">
+                  ₺{product.price.toLocaleString("tr-TR")}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2 mb-1.5">
-        <div className="w-2 h-2 rounded-full bg-primary"></div>
-        <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-          {catName}
-        </span>
-      </div>
-      <h3 className="font-bold text-lg text-foreground line-clamp-1 mb-1">
-        {product.name}
-      </h3>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          {hasDiscount ? (
-             <div className="flex items-center gap-2">
-               <p className="font-black text-foreground">
-                 ₺{finalPrice.toLocaleString("tr-TR")}
-               </p>
-               <p className="text-xs text-muted-foreground line-through">
-                 ₺{product.price.toLocaleString("tr-TR")}
-               </p>
-             </div>
-          ) : (
-            <p className="font-black text-foreground">
-              ₺{product.price.toLocaleString("tr-TR")}
-            </p>
-          )}
-        </div>
-        {product.stock > 0 && (
-          <p className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-md uppercase tracking-wide">
-            Stokta
-          </p>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

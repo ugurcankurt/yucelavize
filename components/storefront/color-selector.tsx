@@ -1,6 +1,6 @@
 "use client";
 import { Check } from "lucide-react";
-const COLOR_MAP: Record<string, string> = {
+export const COLOR_MAP: Record<string, string> = {
   Siyah: "bg-foreground",
   Beyaz: "bg-background",
   Gri: "bg-muted",

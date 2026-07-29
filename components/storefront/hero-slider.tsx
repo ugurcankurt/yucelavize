@@ -17,6 +17,32 @@ export interface HeroSlide {
 
 export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null); // otherwise the swipe is fired even with usual touch events
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextSlide();
+    } else if (isRightSwipe) {
+      prevSlide();
+    }
+  };
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -30,9 +56,9 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
 
   if (!slides || slides.length === 0) {
     return (
-      <section className="w-full pt-6 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-[32px] overflow-hidden bg-muted flex items-center justify-center">
+      <section className="w-full pt-0 md:pt-6 pb-8 md:pb-12">
+        <div className="container mx-auto px-0 lg:px-4">
+          <div className="relative w-full aspect-[4/5] sm:h-[600px] md:h-[700px] sm:aspect-auto -mt-8 lg:mt-0 rounded-none lg:rounded-[32px] overflow-hidden bg-muted flex items-center justify-center z-0">
             <p className="text-muted-foreground">Henüz slayt eklenmemiş.</p>
           </div>
         </div>
@@ -44,9 +70,14 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const prevSlide = () => setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   return (
-    <section className="w-full pt-6 pb-12">
-      <div className="container mx-auto px-4">
-        <div className="relative w-full h-[600px] md:h-[700px] rounded-[32px] overflow-hidden bg-black group">
+    <section className="w-full pt-0 md:pt-6 pb-8 md:pb-12">
+      <div className="container mx-auto px-0 lg:px-4">
+        <div 
+          className="relative w-full aspect-[4/5] sm:h-[600px] md:h-[700px] sm:aspect-auto -mt-8 lg:mt-0 rounded-none lg:rounded-[32px] overflow-hidden bg-black group z-0"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {slides.map((slide, index) => {
             const isActive = index === currentIndex;
             return (
@@ -67,11 +98,11 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                     className="object-cover opacity-80"
                   />
                   {/* Subtle Gradient Overlay for Text Readability - Mobile Bottom, Desktop Left */}
-                  <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 via-black/40 to-transparent md:to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/90 via-black/50 to-transparent md:to-transparent" />
                 </div>
 
                 {/* Content */}
-                <div className="relative z-20 p-8 pb-16 md:p-24 flex flex-col items-start justify-end md:justify-center w-full h-full max-w-4xl">
+                <div className="relative z-20 p-6 pb-20 sm:p-8 sm:pb-16 md:p-24 flex flex-col items-start justify-end md:justify-center w-full h-full max-w-4xl">
                   {slide.subtitle && (
                     <div 
                       className={`mb-4 uppercase tracking-widest text-xs font-bold text-white drop-shadow-md transition-all duration-700 delay-300 ${
@@ -82,7 +113,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                     </div>
                   )}
                   <h1 
-                    className={`text-5xl md:text-[80px] font-black tracking-tight text-white leading-[1.1] drop-shadow-lg mb-8 transition-all duration-700 delay-100 ${
+                    className={`text-4xl sm:text-5xl md:text-[80px] font-black tracking-tight text-white leading-[1.1] drop-shadow-lg mb-6 md:mb-8 transition-all duration-700 delay-100 ${
                       isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                     }`}
                   >
@@ -92,7 +123,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   {slide.button_text && (
                     <Link
                       href={slide.link_url || "/products"}
-                      className={`inline-flex items-center justify-center h-12 px-8 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all duration-700 delay-500 hover:scale-105 shadow-xl ${
+                      className={`inline-flex items-center justify-center h-11 md:h-12 px-6 md:px-8 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all duration-700 delay-500 hover:scale-105 shadow-xl ${
                         isActive ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
                       }`}
                     >

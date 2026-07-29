@@ -18,6 +18,9 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   appliedCoupon: any | null;
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
   addItem: (product: ProductType, quantity?: number, color?: string) => void;
   removeItem: (productId: string, color?: string) => void;
   updateQuantity: (productId: string, quantity: number, color?: string) => void;
@@ -35,6 +38,10 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       items: [],
       appliedCoupon: null,
+      isOpen: false,
+
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
 
       addItem: (product, quantity = 1, color) => {
         const currentItems = get().items;
@@ -54,6 +61,9 @@ export const useCart = create<CartState>()(
         } else {
           set({ items: [...currentItems, { product, quantity, color }] });
         }
+        
+        // Automatically open cart when an item is added
+        get().openCart();
       },
 
       removeItem: (productId, color) => {
@@ -120,6 +130,7 @@ export const useCart = create<CartState>()(
     {
       name: 'yucel-avize-cart-storage',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ items: state.items, appliedCoupon: state.appliedCoupon }),
     }
   )
 );

@@ -24,37 +24,172 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { toast } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
-export function CartIcon() {
+interface CartIconProps {
+  className?: string;
+  iconClassName?: string;
+  badgeClassName?: string;
+}
+
+function RemoveItemDialog({
+  item,
+  onRemove,
+  isMobile,
+  open,
+  onOpenChange
+}: {
+  item: any;
+  onRemove: () => void;
+  isMobile: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!item) return null;
+
+  const ProductPreview = () => (
+    <div className="flex gap-4 p-4 mt-6 mb-2 border border-border rounded-2xl bg-muted/30 shadow-sm items-center text-left">
+      <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-border shrink-0">
+        {item.product.images?.[0] ? (
+          <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" sizes="64px" />
+        ) : (
+          <ShoppingCart className="w-6 h-6 text-muted-foreground m-auto mt-5" />
+        )}
+      </div>
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="font-bold text-foreground text-sm line-clamp-1">{item.product.name}</span>
+        {item.color && <span className="text-xs text-muted-foreground mt-0.5">Renk: {item.color}</span>}
+        <span className="font-bold text-primary mt-1">₺{item.product.price}</span>
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        {" "}
+        <SheetTrigger render={<button className="text-muted-foreground hover:text-destructive transition-colors p-1" />}>
+          {" "}
+          <Trash2 className="w-4 h-4" />{" "}
+        </SheetTrigger>{" "}
+        <SheetContent side="bottom" overlayClassName="z-[60] bg-black/60 backdrop-blur-sm" className="z-[60] rounded-t-[32px] px-4 pb-8 h-auto bg-background border-none shadow-2xl">
+          {" "}
+          <SheetHeader className="text-center sm:text-center mt-2 px-0 border-0">
+            {" "}
+            <SheetTitle className="text-xl font-bold flex justify-center text-foreground">Sepetten Çıkar?</SheetTitle>{" "}
+            <ProductPreview />
+          </SheetHeader>{" "}
+          <div className="flex gap-3 pt-6 w-full">
+            {" "}
+            <SheetClose render={
+              <Button variant="secondary" className="flex-1 h-12 rounded-full font-bold text-base bg-muted hover:bg-muted/80 text-foreground" onClick={() => onOpenChange(false)}>
+                Vazgeç
+              </Button>
+            } />
+            <Button variant="destructive" className="flex-1 h-12 rounded-full font-bold text-base" onClick={() => { onRemove(); onOpenChange(false); }}>
+              Evet, Sil
+            </Button>{" "}
+          </div>{" "}
+        </SheetContent>{" "}
+      </Sheet>
+    );
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {" "}
+      <AlertDialogTrigger render={<button className="text-muted-foreground hover:text-destructive transition-colors p-1" />}>
+        {" "}
+        <Trash2 className="w-4 h-4" />{" "}
+      </AlertDialogTrigger>{" "}
+      <AlertDialogContent className="p-6 bg-background border-none shadow-2xl">
+        {" "}
+        <AlertDialogHeader className="text-center sm:text-center">
+          {" "}
+          <AlertDialogTitle className="text-xl font-bold text-center text-foreground">Sepetten Çıkar?</AlertDialogTitle>{" "}
+          <AlertDialogDescription className="sr-only">Bu ürünü sepetinizden kaldırmak istediğinize emin misiniz?</AlertDialogDescription>{" "}
+          <ProductPreview />
+        </AlertDialogHeader>{" "}
+        <AlertDialogFooter className="flex-row gap-3 pt-4 sm:justify-center w-full">
+          {" "}
+          <AlertDialogCancel render={
+            <Button variant="secondary" className="flex-1 h-12 rounded-full font-bold text-base bg-muted hover:bg-muted/80 text-foreground mt-0">
+              Vazgeç
+            </Button>
+          } onClick={() => onOpenChange(false)} />
+          <AlertDialogAction render={
+            <Button variant="destructive" className="flex-1 h-12 rounded-full font-bold text-base mt-0" onClick={() => { onRemove(); onOpenChange(false); }}>
+              Evet, Sil
+            </Button>
+          } />
+        </AlertDialogFooter>{" "}
+      </AlertDialogContent>{" "}
+    </AlertDialog>
+  );
+}
+
+export function CartIcon({ className, iconClassName, badgeClassName }: CartIconProps = {}) {
   const cart = useCart();
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<any | null>(null);
+
   useEffect(() => {
     setMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+      setIsLandscapeMobile(window.innerWidth < 1024 && window.innerHeight < 500);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
   const itemCount = mounted ? cart.getItemCount() : 0;
   const cartTotal = mounted ? cart.getTotal() : 0;
   return (
-    <Sheet>
+    <>
+    <Sheet open={cart.isOpen} onOpenChange={(open) => open ? cart.openCart() : cart.closeCart()}>
       {" "}
       <SheetTrigger
         render={
-          <Button variant="ghost" size="icon" className="w-9 h-9 relative" />
+          <Button variant="ghost" size="icon" className={className || "w-9 h-9 relative"} onClick={() => cart.openCart()} />
         }
       >
         {" "}
-        <ShoppingCart className="h-5 w-5" />{" "}
+        <ShoppingCart className={iconClassName || "h-5 w-5"} />{" "}
         {itemCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-foreground text-[10px] font-bold text-background flex items-center justify-center">
+          <span className={badgeClassName || "absolute -top-1 -right-1 h-4 w-4 rounded-full bg-foreground text-[10px] font-bold text-background flex items-center justify-center"}>
             {" "}
             {itemCount}{" "}
           </span>
         )}{" "}
         <span className="sr-only">Sepet</span>{" "}
       </SheetTrigger>{" "}
-      <SheetContent className="flex flex-col w-full sm:max-w-md p-0">
+      <SheetContent
+        side={isMobile && !isLandscapeMobile ? "top" : "right"}
+        overlayClassName={isMobile ? "z-[49]" : ""}
+        className={
+          isMobile && !isLandscapeMobile
+            ? "flex flex-col w-full h-full max-h-[85dvh] rounded-b-[32px] z-[49] pt-[90px] px-0 pb-0"
+            : isLandscapeMobile
+              ? "flex flex-col w-full sm:max-w-md p-0 z-[49]"
+              : "flex flex-col w-full sm:max-w-md p-0"
+        }
+      >
         {" "}
-        <SheetHeader className="p-6 border-b border-border">
+        <SheetHeader className={isMobile && !isLandscapeMobile ? "shrink-0 px-6 pb-4 border-b border-border" : "shrink-0 p-6 border-b border-border"}>
           {" "}
           <SheetTitle className="text-xl font-bold flex items-center gap-2">
             {" "}
@@ -99,7 +234,7 @@ export function CartIcon() {
         ) : (
           <>
             {" "}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6">
               {" "}
               {cart.items.map((item, idx) => (
                 <div
@@ -182,53 +317,18 @@ export function CartIcon() {
                           <Plus className="w-3 h-3" />{" "}
                         </button>{" "}
                       </div>{" "}
-                      <AlertDialog>
-                        {" "}
-                        <AlertDialogTrigger
-                          render={
-                            <button className="text-muted-foreground hover:text-destructive transition-colors p-1" />
-                          }
-                        >
-                          {" "}
-                          <Trash2 className="w-4 h-4" />{" "}
-                        </AlertDialogTrigger>{" "}
-                        <AlertDialogContent>
-                          {" "}
-                          <AlertDialogHeader>
-                            {" "}
-                            <AlertDialogTitle>Ürünü Sil</AlertDialogTitle>{" "}
-                            <AlertDialogDescription>
-                              {" "}
-                              Bu ürünü sepetinizden kaldırmak istediğinize emin
-                              misiniz?{" "}
-                            </AlertDialogDescription>{" "}
-                          </AlertDialogHeader>{" "}
-                          <AlertDialogFooter>
-                            {" "}
-                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>{" "}
-                            <AlertDialogAction
-                              onClick={() => {
-                                cart.removeItem(item.product.id, item.color);
-                                toast.add({
-                                  title: "Silindi",
-                                  description:
-                                    "Ürün sepetinizden başarıyla kaldırıldı.",
-                                  type: "success",
-                                } as any);
-                              }}
-                            >
-                              {" "}
-                              Sil{" "}
-                            </AlertDialogAction>{" "}
-                          </AlertDialogFooter>{" "}
-                        </AlertDialogContent>{" "}
-                      </AlertDialog>{" "}
+                      <button
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                        onClick={() => setItemToRemove(item)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>{" "}
                   </div>{" "}
                 </div>
               ))}{" "}
             </div>{" "}
-            <div className="border-t border-border p-6 bg-muted space-y-4">
+            <div className={isMobile && !isLandscapeMobile ? "shrink-0 border-t border-border p-6 bg-muted space-y-4 rounded-b-[32px]" : "shrink-0 border-t border-border p-6 bg-muted space-y-4"}>
               {" "}
               <div className="flex items-center justify-between text-sm">
                 {" "}
@@ -274,5 +374,23 @@ export function CartIcon() {
         )}{" "}
       </SheetContent>{" "}
     </Sheet>
+    
+    <RemoveItemDialog 
+      item={itemToRemove} 
+      isMobile={isMobile}
+      open={!!itemToRemove}
+      onOpenChange={(open) => !open && setItemToRemove(null)}
+      onRemove={() => {
+        if (itemToRemove) {
+          cart.removeItem(itemToRemove.product.id, itemToRemove.color);
+          toast.add({
+            title: "Silindi",
+            description: "Ürün sepetinizden başarıyla kaldırıldı.",
+            type: "success",
+          } as any);
+        }
+      }} 
+    />
+    </>
   );
 }

@@ -1,7 +1,8 @@
 import { Navbar } from "@/components/storefront/navbar";
 import { Footer } from "@/components/storefront/footer";
-import { WhatsappButton } from "@/components/storefront/whatsapp-button";
+import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav";
 import { createClient } from "@/lib/supabase/server";
+import { Suspense } from "react";
 export default async function StorefrontLayout({
   children,
 }: {
@@ -32,8 +33,14 @@ export default async function StorefrontLayout({
         profile={profile}
         categories={categories || []}
       />{" "}
-      <main className="flex-1 flex flex-col">{children}</main> <Footer />{" "}
-      <WhatsappButton />{" "}
+      <main className="flex-1 flex flex-col mb-16 lg:mb-0">{children}</main> <Footer />{" "}
+      <Suspense 
+        fallback={
+          <div className="lg:hidden fixed left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-zinc-900 rounded-[24px] shadow-2xl z-[60] bottom-6 h-16 pointer-events-none opacity-50" />
+        }
+      >
+        <MobileBottomNav />
+      </Suspense>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Maximize2 } from "lucide-react";
+import { Share2, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,7 @@ export function ProductGallery({
   const [activeIndex, setActiveIndex] = useState(0);
   const [mainApi, setMainApi] = useState<CarouselApi>();
   const [thumbApi, setThumbApi] = useState<CarouselApi>();
+  const [copied, setCopied] = useState(false);
   useEffect(() => {
     if (!mainApi || !thumbApi) return;
     const onSelect = () => {
@@ -55,7 +56,7 @@ export function ProductGallery({
   const color = searchParams.get("color");
   useEffect(() => {
     if (!mainApi || !colorMapping || !color) return;
-    
+
     if (colorMapping[color]) {
       const mappedImageUrl = colorMapping[color];
       // Find index of this URL in images array
@@ -72,10 +73,10 @@ export function ProductGallery({
   };
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-      {/* Desktop Vertical Thumbnails (Syncs with Main Carousel) */}
+    <div className="w-full flex flex-col lg:flex-row gap-0 lg:gap-6 animate-in fade-in duration-700">
+      {/* Desktop/Tablet Thumbnails (Vertical) */}
       {images.length > 1 && (
-        <div className="hidden md:block w-20 lg:w-24 shrink-0 h-max">
+        <div className="hidden lg:block w-20 lg:w-24 shrink-0 order-2 lg:order-1 relative">
           <Carousel
             orientation="vertical"
             setApi={setThumbApi}
@@ -112,10 +113,10 @@ export function ProductGallery({
         </div>
       )}
       {/* Main Image View */}
-      <div className="flex-1 w-full relative">
+      <div className="flex-1 min-w-0 order-1 lg:order-2">
         <Dialog>
           {/* Main Unified Carousel (Desktop & Mobile) */}
-          <div className="relative w-full bg-muted rounded-2xl overflow-hidden group shadow-sm">
+          <div className="relative w-full bg-muted lg:rounded-2xl overflow-hidden group shadow-sm">
             <Carousel
               setApi={setMainApi}
               className="w-full"
@@ -145,14 +146,14 @@ export function ProductGallery({
               {/* Desktop Hover Arrows */}
               {images.length > 1 && (
                 <>
-                  <CarouselPrevious className="hidden md:flex left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background backdrop-blur-md" />
-                  <CarouselNext className="hidden md:flex right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background backdrop-blur-md" />
+                  <CarouselPrevious className="hidden lg:flex left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background backdrop-blur-md" />
+                  <CarouselNext className="hidden lg:flex right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background backdrop-blur-md" />
                 </>
               )}
             </Carousel>
             {/* Mobile Pagination Dots */}
             {images.length > 1 && (
-              <div className="md:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none z-10">
+              <div className="lg:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none z-10">
                 {images.map((_, idx) => (
                   <div
                     key={idx}
@@ -166,17 +167,34 @@ export function ProductGallery({
                 ))}
               </div>
             )}
-            {/* Desktop Maximize Cue */}
-            <div className="hidden md:flex absolute bottom-4 right-4 w-10 h-10 rounded-full shadow-sm backdrop-blur-xl bg-background/80 items-center justify-center pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Maximize2 className="w-4 h-4 text-foreground" />
-            </div>
-            {/* Favorite Button on Gallery */}
-            <div className="absolute top-4 right-4 z-20">
+            {/* Top Right Actions */}
+            <div className="absolute top-12 lg:top-4 right-4 z-20 flex flex-col gap-3">
+              <button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: productName,
+                        url: window.location.href,
+                      });
+                    } catch (err) { }
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }
+                }}
+                className="w-11 h-11 lg:w-12 lg:h-12 shadow-lg backdrop-blur-xl bg-background/90 hover:bg-background dark:hover:bg-background border border-border/50 rounded-full flex items-center justify-center text-foreground transition-colors"
+                aria-label="Paylaş"
+              >
+                {copied ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5 lg:w-6 lg:h-6" />}
+              </button>
               <FavoriteButton
                 productId={productId}
                 initialIsFavorite={initialIsFavorite}
-                className="w-12 h-12 shadow-lg backdrop-blur-xl bg-background/90 hover:bg-background dark:hover:bg-background border-none"
-                iconClassName="w-6 h-6"
+                className="w-11 h-11 lg:w-12 lg:h-12 shadow-lg backdrop-blur-xl bg-background/90 hover:bg-background dark:hover:bg-background border border-border/50"
+                iconClassName="w-5 h-5 lg:w-6 lg:h-6"
               />
             </div>
           </div>

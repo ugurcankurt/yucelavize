@@ -75,7 +75,25 @@ export default async function Home() {
               Tümünü Gör
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+          <div className="flex md:hidden overflow-x-auto pb-4 -mx-4 px-4 gap-3 snap-x scrollbar-hide">
+            <Link
+              href="/products"
+              className="snap-start flex-shrink-0 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-semibold shadow-sm"
+            >
+              Hepsi
+            </Link>
+            {categories?.map((cat) => (
+              <Link
+                href={`/products?category=${cat.slug}`}
+                key={cat.id}
+                className="snap-start flex-shrink-0 bg-muted/50 border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap"
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </div>
+
+          <div className="hidden md:grid grid-cols-4 gap-4 flex-1">
             {categories?.map((cat) => (
               <Link
                 href={`/products?category=${cat.slug}`}
@@ -87,7 +105,7 @@ export default async function Home() {
                     src={cat.image_url}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    sizes="(max-width: 1200px) 25vw, 20vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
