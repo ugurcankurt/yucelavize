@@ -62,11 +62,11 @@ export default function CheckoutPage() {
       <div className="container mx-auto px-4 max-w-6xl">
         {" "}
         <Link
-          href="/cart"
+          href="/products"
           className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors mb-8"
         >
           {" "}
-          <ArrowLeft className="w-4 h-4 mr-2" /> Sepete Dön{" "}
+          <ArrowLeft className="w-4 h-4 mr-2" /> Alışverişe Devam Et{" "}
         </Link>{" "}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {" "}

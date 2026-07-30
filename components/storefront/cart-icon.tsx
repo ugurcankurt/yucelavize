@@ -1,7 +1,9 @@
 "use client";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { validateCoupon } from "@/app/actions/coupon";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -144,6 +146,8 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
   const [isMobile, setIsMobile] = useState(false);
   const [isLandscapeMobile, setIsLandscapeMobile] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<any | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -329,33 +333,98 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
               ))}{" "}
             </div>{" "}
             <div className={isMobile && !isLandscapeMobile ? "shrink-0 border-t border-border p-6 bg-muted space-y-4 rounded-b-[32px]" : "shrink-0 border-t border-border p-6 bg-muted space-y-4"}>
-              {" "}
+              
+              {/* Coupon Section */}
+              <div className="mb-2 pb-4 border-b border-border/50">
+                {!cart.appliedCoupon ? (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input 
+                        placeholder="Kupon Kodu" 
+                        className="pl-9 h-10 bg-background uppercase text-sm" 
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      />
+                    </div>
+                    <Button 
+                      variant="secondary" 
+                      className="h-10 px-4 font-bold text-sm"
+                      disabled={!couponCode || isApplying}
+                      onClick={async () => {
+                        setIsApplying(true);
+                        const result = await validateCoupon(couponCode, cart.getTotal());
+                        setIsApplying(false);
+                        
+                        if (result.error) {
+                          toast.add({
+                            title: "Hata",
+                            description: result.error,
+                            type: "error",
+                          } as any);
+                        } else if (result.coupon) {
+                          cart.applyCoupon(result.coupon);
+                          setCouponCode("");
+                          toast.add({
+                            title: "Başarılı",
+                            description: "Kupon başarıyla uygulandı!",
+                            type: "success",
+                          } as any);
+                        }
+                      }}
+                    >
+                      {isApplying ? "..." : "Uygula"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-2.5 bg-success/10 border border-success/20 rounded-xl">
+                    <div className="flex items-center gap-2 text-success font-semibold text-sm">
+                      <Tag className="w-4 h-4" />
+                      <span>{cart.appliedCoupon.code} Uygulandı</span>
+                    </div>
+                    <button 
+                      onClick={() => cart.removeCoupon()}
+                      className="p-1 hover:bg-success/20 rounded-md text-success transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between text-sm">
-                {" "}
                 <span className="text-muted-foreground font-medium">
                   Ara Toplam
-                </span>{" "}
+                </span>
                 <span className="font-bold text-foreground">
-                  ₺{cartTotal.toFixed(2)}
-                </span>{" "}
-              </div>{" "}
+                  ₺{cart.getTotal().toLocaleString("tr-TR")}
+                </span>
+              </div>
               <div className="flex items-center justify-between text-sm">
-                {" "}
                 <span className="text-muted-foreground font-medium">
                   Kargo
-                </span>{" "}
-                <span className="font-bold text-success">Ücretsiz</span>{" "}
-              </div>{" "}
-              <Separator className="bg-secondary" />{" "}
+                </span>
+                <span className="font-bold text-success">Ücretsiz</span>
+              </div>
+
+              {cart.appliedCoupon && (
+                <div className="flex items-center justify-between text-sm text-success">
+                  <span className="font-medium">İndirim ({cart.appliedCoupon.code})</span>
+                  <span className="font-bold">
+                    -₺{cart.getDiscountAmount().toLocaleString("tr-TR")}
+                  </span>
+                </div>
+              )}
+
+              <Separator className="bg-secondary" />
               <div className="flex items-center justify-between">
-                {" "}
                 <span className="text-base font-bold text-foreground">
                   Toplam
-                </span>{" "}
+                </span>
                 <span className="text-xl font-black text-primary">
-                  ₺{cartTotal.toFixed(2)}
-                </span>{" "}
-              </div>{" "}
+                  ₺{cart.getFinalTotal().toLocaleString("tr-TR")}
+                </span>
+              </div>
               <SheetClose
                 nativeButton={false}
                 render={
@@ -366,10 +435,9 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
                   />
                 }
               >
-                {" "}
-                Sepeti Onayla <ArrowRight className="w-5 h-5 ml-2" />{" "}
-              </SheetClose>{" "}
-            </div>{" "}
+                Sepeti Onayla <ArrowRight className="w-5 h-5 ml-2" />
+              </SheetClose>
+            </div>
           </>
         )}{" "}
       </SheetContent>{" "}
