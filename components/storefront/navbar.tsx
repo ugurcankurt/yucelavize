@@ -97,6 +97,15 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
 
     const handleScroll = () => {
       if (isActive) {
+        // Prevent closing if the scroll is triggered by the on-screen keyboard
+        // bringing the focused input into view.
+        if (
+          document.activeElement?.tagName === "INPUT" &&
+          mobileSearchRef.current?.contains(document.activeElement)
+        ) {
+          return;
+        }
+
         setIsMobileSearchOpen(false);
         setShowResults(false);
       }
