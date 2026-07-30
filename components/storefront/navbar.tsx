@@ -376,31 +376,31 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
         </div>{" "}
       </div>
       {/* Mobile Header (App-like) */}
-      <div className="lg:hidden flex flex-col w-full bg-primary text-primary-foreground rounded-b-[32px] pt-4 pb-4 px-4 shadow-md relative z-20 transition-all duration-300">
-        <div className="flex items-center justify-between mb-2">
+      <div className="lg:hidden flex flex-col w-full bg-primary text-primary-foreground rounded-b-[24px] pt-3 pb-3 px-4 shadow-md relative z-20 transition-all duration-300">
+        <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
-            <span className="text-[24px] font-black tracking-tighter text-primary-foreground">
+            <span className="text-[22px] font-black tracking-tighter text-primary-foreground">
               yücel<span className="text-primary-foreground/70">avize</span>
             </span>
           </Link>
 
           {/* Actions (Search Toggle, Cart) */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 setIsMobileSearchOpen(!isMobileSearchOpen);
                 if (isMobileSearchOpen) setShowResults(false);
               }}
-              className="relative w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center transition-colors hover:bg-primary-foreground/20 text-primary-foreground"
+              className="relative w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center transition-colors hover:bg-primary-foreground/20 text-primary-foreground"
               aria-label="Arama"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-[18px] h-[18px]" />
             </button>
             <CartIcon
-              className="relative w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center transition-colors hover:bg-primary-foreground/20 text-primary-foreground hover:text-primary-foreground"
-              iconClassName="w-5 h-5"
-              badgeClassName="absolute top-0 right-0 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center border border-primary"
+              className="relative w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center transition-colors hover:bg-primary-foreground/20 text-primary-foreground hover:text-primary-foreground"
+              iconClassName="w-[18px] h-[18px]"
+              badgeClassName="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center border border-primary"
             />
           </div>
         </div>

@@ -94,7 +94,7 @@ export default async function ProductsPage({
   return (
     <div className="w-full bg-background font-sans min-h-screen">
       <div
-        className={`relative w-full py-16 md:py-24 border-b border-border flex items-center justify-center overflow-hidden ${categoryData?.image_url ? "" : "bg-muted"}`}
+        className={`relative w-full -mt-[70px] pt-[130px] pb-16 md:-mt-[80px] md:pt-[160px] md:pb-24 flex items-center justify-center overflow-hidden ${categoryData?.image_url ? "" : "bg-gradient-to-br from-muted via-muted/50 to-background"}`}
       >
         {categoryData?.image_url && (
           <>
@@ -106,16 +106,16 @@ export default async function ProductsPage({
               sizes="100vw"
               className="object-cover absolute inset-0 z-0"
             />
-            <div className="absolute inset-0 bg-background/50 z-10"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-transparent z-10"></div>
           </>
         )}
         <div
-          className="container relative z-20 mx-auto px-4 flex flex-col items-center text-center text-foreground"
+          className="container relative z-20 mx-auto px-6 flex flex-col items-center text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-primary">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 md:mb-4 text-primary drop-shadow-md">
             {pageTitle}
           </h1>
-          <p className="font-medium max-w-lg text-muted-foreground">
+          <p className="font-semibold text-sm md:text-base max-w-lg text-foreground/90 drop-shadow-md leading-relaxed">
             {pageDescription}
           </p>
         </div>
@@ -129,7 +129,7 @@ export default async function ProductsPage({
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10">
             {products.map((product, index) => (
               <ProductCard
                 key={product.id}

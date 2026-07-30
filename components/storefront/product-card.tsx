@@ -50,38 +50,38 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group block"
+      className="group block h-full"
     >
-      <Card className="overflow-hidden border-transparent bg-card shadow-sm hover:shadow-md transition-all duration-300 rounded-[20px] p-3 sm:p-4">
-        <div className="relative w-full aspect-square overflow-hidden rounded-[16px] bg-muted/50 mb-3 sm:mb-4 flex items-center justify-center">
+      <Card className="h-full overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-all duration-300 rounded-[20px] p-0 gap-0 flex flex-col">
+        <div className="relative w-full aspect-square overflow-hidden bg-muted/20 flex items-center justify-center">
           <Image
             src={primaryImage}
             alt={product.name}
             fill
             priority={priority}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            className="object-cover p-2 sm:p-0 sm:object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           
-          {/* Favorite Button (Floating Top Right inside image area, or just top right of card) */}
-          <div className="absolute top-2 right-2 z-10">
+          {/* Favorite Button (Floating Top Right) */}
+          <div className="absolute top-3 right-3 z-10">
             <FavoriteButton
               productId={product.id}
               initialIsFavorite={isFavorite}
-              className="w-8 h-8 sm:w-9 sm:h-9 shadow-sm bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center text-gray-400"
+              className="w-8 h-8 shadow-sm bg-white hover:bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center text-gray-400"
               iconClassName="w-4 h-4"
             />
           </div>
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
+          <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
             {product.stock <= 5 && product.stock > 0 && (
-              <Badge variant="destructive" className="shadow-sm text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1">
+              <Badge variant="destructive" className="shadow-sm rounded-full text-[9px] sm:text-[10px] font-bold tracking-wide px-2 py-0.5 sm:px-2.5 sm:py-1">
                 Son {product.stock}
               </Badge>
             )}
             {hasDiscount && (
-              <Badge className="shadow-sm bg-rose-500 hover:bg-rose-600 text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 text-white">
+              <Badge className="shadow-sm rounded-full bg-rose-500 hover:bg-rose-600 text-[9px] sm:text-[10px] font-bold tracking-wide px-2 py-0.5 sm:px-2.5 sm:py-1 text-white border-none">
                 {discountBadge}
               </Badge>
             )}
@@ -97,38 +97,30 @@ export function ProductCard({
           )}
         </div>
 
-        <CardContent className="p-0 flex flex-col">
-          <h3 className="font-bold text-[14px] sm:text-base text-foreground line-clamp-1 mb-1 group-hover:text-primary transition-colors duration-300">
-            {product.name}
-          </h3>
-          
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground">
-              {catName}
-            </span>
-            <div className="flex items-center gap-1">
-              <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-[11px] sm:text-[12px] font-bold text-foreground">4.9</span>
+        <CardContent className="px-3 pb-3 pt-3 sm:px-3 sm:pb-3.5 sm:pt-4 flex flex-col flex-1">
+          <div className="flex items-start justify-between gap-2 mb-0.5">
+            <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
+              {product.name}
+            </h3>
+            <div className="flex items-center gap-1 shrink-0 mt-[2px]">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-[12px] sm:text-[13px] font-bold text-foreground">4.9</span>
             </div>
           </div>
+          
+          <span className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mb-3">
+            {catName}
+          </span>
 
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex flex-col">
-              {hasDiscount ? (
-                 <div className="flex items-center gap-1.5 sm:gap-2">
-                   <p className="font-black text-[15px] sm:text-lg text-foreground">
-                     ₺{finalPrice.toLocaleString("tr-TR")}
-                   </p>
-                   <p className="text-[10px] sm:text-[11px] text-muted-foreground line-through decoration-muted-foreground/50">
-                     ₺{product.price.toLocaleString("tr-TR")}
-                   </p>
-                 </div>
-              ) : (
-                <p className="font-black text-[15px] sm:text-lg text-foreground">
-                  ₺{product.price.toLocaleString("tr-TR")}
-                </p>
-              )}
-            </div>
+          <div className="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1">
+            <p className="font-bold text-[15px] sm:text-[16px] text-foreground">
+              ₺{finalPrice.toLocaleString("tr-TR")}
+            </p>
+            {hasDiscount && (
+              <p className="text-[12px] sm:text-[13px] font-medium text-muted-foreground line-through decoration-muted-foreground/60">
+                ₺{product.price.toLocaleString("tr-TR")}
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
