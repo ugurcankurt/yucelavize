@@ -96,7 +96,6 @@ export function MobileBottomNav() {
               <>
                 {/* Left: Price */}
                 <div className="flex flex-col px-3 justify-center min-w-max">
-                  <span className="text-[11px] font-medium text-zinc-400 leading-tight mb-0.5">Toplam</span>
                   <span className="text-base font-extrabold text-white tracking-tight leading-none">₺{product.price.toLocaleString("tr-TR")}</span>
                 </div>
                 
