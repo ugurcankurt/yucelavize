@@ -218,9 +218,7 @@ export default async function ProductDetailPage({
                   </p>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                KDV Dahildir.
-              </p>{" "}
+
             </div>{" "}
             <ProductActionSection
               product={{

@@ -33,7 +33,6 @@ export default function RootLayout({
     <html
       lang="tr"
       className={cn(
-        "h-full",
         "antialiased",
         geistSans.variable,
         geistMono.variable,
@@ -41,7 +40,7 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col">
         {children}
         <Toaster />
       </body>

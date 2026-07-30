@@ -3,6 +3,7 @@ import { Footer } from "@/components/storefront/footer";
 import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav";
 import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
+import { ScrollToTop } from "@/components/storefront/scroll-to-top";
 export default async function StorefrontLayout({
   children,
 }: {
@@ -27,6 +28,7 @@ export default async function StorefrontLayout({
     .order("name");
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <ScrollToTop />
       {" "}
       <Navbar
         user={user}
