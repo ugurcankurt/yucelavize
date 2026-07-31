@@ -8,6 +8,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
+import { OrderStatusSelect } from "@/components/admin/order-status-select";
+import Link from "next/link";
 
 export default async function AdminOrders() {
   const supabase = await createClient();
@@ -76,34 +78,14 @@ export default async function AdminOrders() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      order.status === "pending"
-                        ? "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning"
-                        : order.status === "confirmed"
-                          ? "bg-info/20 text-info dark:bg-info/20 dark:text-info"
-                          : order.status === "shipped"
-                            ? "bg-primary/20 text-primary dark:bg-primary/20 dark:text-primary"
-                            : order.status === "delivered"
-                              ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
-                              : "bg-destructive/20 text-destructive dark:bg-destructive/20 dark:text-destructive"
-                    }`}
-                  >
-                    {order.status === "pending"
-                      ? "Bekliyor (Havale)"
-                      : order.status === "confirmed"
-                        ? "Onaylandı"
-                        : order.status === "shipped"
-                          ? "Kargolandı"
-                          : order.status === "delivered"
-                            ? "Teslim Edildi"
-                            : "İptal Edildi"}
-                  </span>
+                  <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm">
-                    Detay
-                  </Button>
+                  <Link href={`/admin/orders/${order.id}`}>
+                    <Button variant="outline" size="sm">
+                      Detay
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}

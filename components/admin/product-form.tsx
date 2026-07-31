@@ -550,13 +550,13 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
         <div className="pt-6 border-t border-border">
           {" "}
           <h3 className="text-lg font-semibold mb-4 text-foreground">
-            Ürün Ölçüleri (Milimetre)
+            Ürün Ölçüleri (Santimetre)
           </h3>{" "}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-muted p-4 rounded-lg border border-border">
             {" "}
             <div className="space-y-2">
               {" "}
-              <Label htmlFor="width">En / Genişlik (mm)</Label>{" "}
+              <Label htmlFor="width">En / Genişlik (cm)</Label>{" "}
               <Input
                 id="width"
                 name="width"
@@ -569,7 +569,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
             </div>{" "}
             <div className="space-y-2">
               {" "}
-              <Label htmlFor="height">Boy / Yükseklik (mm)</Label>{" "}
+              <Label htmlFor="height">Boy / Yükseklik (cm)</Label>{" "}
               <Input
                 id="height"
                 name="height"
@@ -582,7 +582,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
             </div>{" "}
             <div className="space-y-2">
               {" "}
-              <Label htmlFor="depth">Derinlik (mm)</Label>{" "}
+              <Label htmlFor="depth">Derinlik (cm)</Label>{" "}
               <Input
                 id="depth"
                 name="depth"

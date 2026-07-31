@@ -32,3 +32,19 @@ export async function validateCoupon(code: string, cartTotal: number) {
 
   return { coupon };
 }
+
+export async function incrementCouponUsage(code: string) {
+  const supabase = await createClient();
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select("usage_count")
+    .eq("code", code.toUpperCase())
+    .single();
+
+  if (coupon) {
+    await supabase
+      .from("coupons")
+      .update({ usage_count: coupon.usage_count + 1 })
+      .eq("code", code.toUpperCase());
+  }
+}

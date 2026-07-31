@@ -1,4 +1,5 @@
 "use client";
+
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,267 +7,620 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Lock, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Lock, CheckCircle2, Building, Info, MapPin, Plus, Check } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { incrementCouponUsage } from "@/app/actions/coupon";
+
 export default function CheckoutPage() {
   const cart = useCart();
+  const supabase = createClient();
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  
+  const [user, setUser] = useState<any>(null);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
+  
+  // Billing specific states
+  const [useSameAddressForBilling, setUseSameAddressForBilling] = useState(true);
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string>("");
+  const [isAddingBillingAddress, setIsAddingBillingAddress] = useState(false);
+  
+  const [generatedPassword, setGeneratedPassword] = useState("");
+  
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    address: "",
+    city: "",
+    zip: "",
+    email: "",
+    phone: "",
+    title: "Teslimat Adresim",
+  });
+
+  const [billingFormData, setBillingFormData] = useState({
+    firstName: "",
+    lastName: "",
+    address: "",
+    city: "",
+    zip: "",
+    phone: "",
+    title: "Fatura Adresim",
+  });
+  
+  const [bankInfo, setBankInfo] = useState({ bankName: "", iban: "" });
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    async function fetchData() {
+      const { data: settingsData } = await supabase
+        .from("settings")
+        .select("value")
+        .eq("key", "bank_info")
+        .single();
+        
+      if (settingsData?.value) {
+        setBankInfo(settingsData.value);
+      }
+
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData(prev => ({ ...prev, email: currentUser.email || "" }));
+        
+        const { data: addrData } = await supabase
+          .from("addresses")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false });
+
+        if (addrData && addrData.length > 0) {
+          setAddresses(addrData);
+          setSelectedAddressId(addrData[0].id);
+          setSelectedBillingAddressId(addrData[0].id);
+        } else {
+          setIsAddingNewAddress(true);
+          setIsAddingBillingAddress(true);
+        }
+      } else {
+        setIsAddingNewAddress(true);
+        setIsAddingBillingAddress(true);
+      }
+    }
+    
+    fetchData();
+  }, [supabase]);
+
   if (!mounted) return null;
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const formatAddressString = (addrObj: any) => {
+    if (!addrObj) return "";
+    return `${addrObj.title} - ${addrObj.full_name} - ${addrObj.address_line}, ${addrObj.city} ${addrObj.zip_code} - Tel: ${addrObj.phone}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    /* Simulate API call */ setTimeout(() => {
+    
+    let finalUserId = user?.id;
+
+    // 1. Auto-registration
+    if (!user) {
+      const randomPassword = Math.random().toString(36).slice(-8) + "Yc!1";
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: randomPassword,
+        options: {
+          data: {
+            full_name: `${formData.firstName} ${formData.lastName}`
+          }
+        }
+      });
+      
+      if (signUpError && signUpError.status !== 400) {
+        console.error("Signup error:", signUpError);
+      }
+      
+      if (signUpData?.user) {
+        finalUserId = signUpData.user.id;
+        setGeneratedPassword(randomPassword);
+      }
+    }
+
+    // 2. Insert new shipping address if needed
+    if (isAddingNewAddress && finalUserId) {
+      try {
+        const { data: newAddr, error: addrError } = await supabase.from("addresses").insert({
+          user_id: finalUserId,
+          title: formData.title || "Teslimat Adresi",
+          full_name: `${formData.firstName} ${formData.lastName}`,
+          address_line: formData.address,
+          city: formData.city,
+          zip_code: formData.zip,
+          phone: formData.phone || "000"
+        }).select().single();
+        
+        if (!addrError && newAddr) {
+          setSelectedAddressId(newAddr.id);
+        }
+      } catch (e) {
+        console.error("Shipping address insert error:", e);
+      }
+    }
+
+    // 3. Insert new billing address if needed and different
+    if (!useSameAddressForBilling && isAddingBillingAddress && finalUserId) {
+      try {
+        const { data: newBillAddr, error: billAddrError } = await supabase.from("addresses").insert({
+          user_id: finalUserId,
+          title: billingFormData.title || "Fatura Adresi",
+          full_name: `${billingFormData.firstName} ${billingFormData.lastName}`,
+          address_line: billingFormData.address,
+          city: billingFormData.city,
+          zip_code: billingFormData.zip,
+          phone: billingFormData.phone || "000"
+        }).select().single();
+        
+        if (!billAddrError && newBillAddr) {
+          setSelectedBillingAddressId(newBillAddr.id);
+        }
+      } catch (e) {
+        console.error("Billing address insert error:", e);
+      }
+    }
+
+    // 4. Create Order Records
+    const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+    const shippingString = user && !isAddingNewAddress 
+      ? formatAddressString(selectedAddress) 
+      : `${formData.title} - ${formData.firstName} ${formData.lastName} - ${formData.address}, ${formData.city} ${formData.zip} - Tel: ${formData.phone}`;
+
+    let billingString = shippingString;
+    if (!useSameAddressForBilling) {
+      billingString = user && !isAddingBillingAddress
+        ? formatAddressString(addresses.find(a => a.id === selectedBillingAddressId))
+        : `${billingFormData.title} - ${billingFormData.firstName} ${billingFormData.lastName} - ${billingFormData.address}, ${billingFormData.city} ${billingFormData.zip} - Tel: ${billingFormData.phone}`;
+    }
+
+    // Determine correct customer details
+    let finalCustomerName = `${formData.firstName} ${formData.lastName}`.trim();
+    let finalCustomerPhone = formData.phone;
+
+    if (user && !isAddingNewAddress && selectedAddress) {
+      finalCustomerName = selectedAddress.full_name;
+      finalCustomerPhone = selectedAddress.phone;
+    }
+    
+    // Fallback if name is still empty
+    if (!finalCustomerName) {
+      finalCustomerName = user?.user_metadata?.full_name || user?.email || "Müşteri";
+    }
+
+    // Generate Order ID locally to avoid .select() which can trigger RLS on anonymous sessions
+    const orderId = crypto.randomUUID();
+
+    const couponCode = cart.appliedCoupon?.code || null;
+    const discountTotal = cart.getDiscountAmount() || 0;
+
+    const { error: orderError } = await supabase.from("orders").insert({
+      id: orderId,
+      user_id: finalUserId || null,
+      customer_name: finalCustomerName,
+      customer_email: formData.email || user?.email,
+      customer_phone: finalCustomerPhone || "0",
+      shipping_address: shippingString,
+      billing_address: billingString,
+      total_amount: cart.getFinalTotal(),
+      coupon_code: couponCode,
+      discount_total: discountTotal,
+      status: 'pending'
+    });
+
+    if (!orderError) {
+      const orderItems = cart.items.map(item => ({
+        order_id: orderId,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        unit_price: item.product.price
+      }));
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      
+      if (itemsError) {
+        console.error("Order items creation failed:", itemsError);
+      }
+      
+      
+      // Trigger email sending asynchronously (don't await so it doesn't block UI)
+      fetch("/api/emails/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      }).catch(err => console.error("Email API call failed:", err));
+      
+      // Increment coupon usage
+      if (couponCode) {
+        incrementCouponUsage(couponCode).catch(console.error);
+      }
+      
+      // 5. Success
       setIsSubmitting(false);
       setIsSuccess(true);
       cart.clearCart();
-    }, 1500);
+    } else {
+      console.error("Order creation failed:", orderError);
+      setIsSubmitting(false);
+      alert("Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   };
+
   if (isSuccess) {
     return (
       <div className="w-full bg-background font-sans min-h-screen flex items-center justify-center p-4">
-        {" "}
         <div className="max-w-md w-full bg-background border border-border rounded-[32px] p-10 text-center shadow-xl shadow-gray-100">
-          {" "}
           <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            {" "}
-            <CheckCircle2 className="w-10 h-10 text-success" />{" "}
-          </div>{" "}
+            <CheckCircle2 className="w-10 h-10 text-success" />
+          </div>
           <h2 className="text-3xl font-black text-foreground mb-4">
             Sipariş Alındı!
-          </h2>{" "}
-          <p className="text-muted-foreground font-medium mb-8">
-            {" "}
-            Teşekkür ederiz. Siparişiniz başarıyla oluşturuldu. Sipariş
-            detayları e-posta adresinize gönderildi.{" "}
-          </p>{" "}
+          </h2>
+          <p className="text-muted-foreground font-medium mb-6">
+            Siparişiniz başarıyla alındı. Ödemenizi lütfen aşağıdaki Havale/EFT bilgileri ile gerçekleştirin. Ödeme onaylandıktan sonra siparişiniz hazırlanmaya başlanacaktır.
+          </p>
+          
+          {generatedPassword && (
+            <div className="mb-8 p-4 bg-primary/10 rounded-xl border border-primary/20 text-left">
+              <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Hesabınız Oluşturuldu!
+              </h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Sipariş takibini yapabilmeniz için otomatik olarak hesabınız oluşturuldu:
+              </p>
+              <div className="space-y-1">
+                <p className="text-sm"><span className="font-semibold text-foreground">E-posta:</span> {formData.email}</p>
+                <p className="text-sm"><span className="font-semibold text-foreground">Şifre:</span> <span className="font-mono bg-background px-2 py-0.5 rounded border">{generatedPassword}</span></p>
+              </div>
+            </div>
+          )}
+
           <Button
             nativeButton={false}
             size="lg"
             className="w-full rounded-full font-bold h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
             render={<Link href="/products" />}
           >
-            {" "}
-            Alışverişe Devam Et{" "}
-          </Button>{" "}
-        </div>{" "}
+            Alışverişe Devam Et
+          </Button>
+        </div>
       </div>
     );
   }
+
+  // Helper to render address form
+  const renderAddressForm = (data: any, setData: any, required: boolean) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">Ad</Label>
+          <Input
+            value={data.firstName}
+            onChange={(e) => setData({...data, firstName: e.target.value})}
+            required={required}
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">Soyad</Label>
+          <Input
+            value={data.lastName}
+            onChange={(e) => setData({...data, lastName: e.target.value})}
+            required={required}
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">Telefon</Label>
+          <Input
+            value={data.phone}
+            onChange={(e) => setData({...data, phone: e.target.value})}
+            required={required}
+            placeholder="05..."
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">Adres Başlığı</Label>
+          <Input
+            value={data.title}
+            onChange={(e) => setData({...data, title: e.target.value})}
+            required={required}
+            placeholder="Ev, İş vb."
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-muted-foreground font-semibold text-sm">Adres</Label>
+        <Input
+          value={data.address}
+          onChange={(e) => setData({...data, address: e.target.value})}
+          required={required}
+          placeholder="Mahalle, sokak, bina no..."
+          className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+        />
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">İl / İlçe</Label>
+          <Input
+            value={data.city}
+            onChange={(e) => setData({...data, city: e.target.value})}
+            required={required}
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-muted-foreground font-semibold text-sm">Posta Kodu</Label>
+          <Input
+            value={data.zip}
+            onChange={(e) => setData({...data, zip: e.target.value})}
+            required={required}
+            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full bg-muted font-sans min-h-screen py-10 md:py-20">
-      {" "}
       <div className="container mx-auto px-4 max-w-6xl">
-        {" "}
         <Link
           href="/products"
           className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors mb-8"
         >
-          {" "}
-          <ArrowLeft className="w-4 h-4 mr-2" /> Alışverişe Devam Et{" "}
-        </Link>{" "}
+          <ArrowLeft className="w-4 h-4 mr-2" /> Alışverişe Devam Et
+        </Link>
+        
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          {" "}
-          {/* Checkout Form */}{" "}
+          {/* Checkout Form */}
           <div className="lg:col-span-7 bg-background border border-border rounded-[32px] p-6 sm:p-10 shadow-sm">
-            {" "}
             <div className="flex items-center gap-3 mb-8">
-              {" "}
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                {" "}
-                <Lock className="w-5 h-5" />{" "}
-              </div>{" "}
+                <Lock className="w-5 h-5" />
+              </div>
               <div>
-                {" "}
                 <h1 className="text-2xl font-black text-foreground tracking-tight">
                   Güvenli Ödeme
-                </h1>{" "}
+                </h1>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Tüm bilgileriniz şifrelenerek korunur.
-                </p>{" "}
-              </div>{" "}
-            </div>{" "}
+                  Sipariş bilgilerinizi tamamlayın.
+                </p>
+              </div>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-8">
-              {" "}
-              {/* İletişim */}{" "}
+              {/* İletişim */}
               <div className="space-y-4">
-                {" "}
                 <h2 className="text-lg font-bold text-foreground">
                   İletişim Bilgileri
-                </h2>{" "}
-                <div className="space-y-2">
-                  {" "}
-                  <Label
-                    htmlFor="email"
-                    className="text-muted-foreground font-semibold text-sm"
-                  >
-                    E-posta
-                  </Label>{" "}
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="ornek@email.com"
-                    required
-                    className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                  />{" "}
-                </div>{" "}
-              </div>{" "}
-              {/* Teslimat */}{" "}
+                </h2>
+                
+                {user ? (
+                  <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Hesabınızla giriş yapıldı</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-muted-foreground font-semibold text-sm"
+                    >
+                      E-posta Adresi
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      placeholder="ornek@email.com"
+                      required
+                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Sipariş takibi için hesabınız otomatik oluşturulacaktır.</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Teslimat */}
               <div className="space-y-4 pt-4 border-t border-border">
-                {" "}
                 <h2 className="text-lg font-bold text-foreground">
                   Teslimat Adresi
-                </h2>{" "}
-                <div className="grid grid-cols-2 gap-4">
-                  {" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="firstName"
-                      className="text-muted-foreground font-semibold text-sm"
+                </h2>
+                
+                {user && !isAddingNewAddress ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {addresses.map((address) => (
+                        <div
+                          key={address.id}
+                          onClick={() => setSelectedAddressId(address.id)}
+                          className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${
+                            selectedAddressId === address.id 
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                            : 'border-border bg-background hover:border-primary/50'
+                          }`}
+                        >
+                          {selectedAddressId === address.id && (
+                            <div className="absolute top-4 right-4 text-primary">
+                              <Check className="w-5 h-5" />
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <h3 className="font-bold text-foreground text-sm">{address.title}</h3>
+                          </div>
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <p className="font-semibold text-foreground">{address.full_name}</p>
+                            <p className="line-clamp-2">{address.address_line}</p>
+                            <p>{address.city} {address.zip_code && `, ${address.zip_code}`}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-xl border-dashed h-12"
+                      onClick={() => setIsAddingNewAddress(true)}
                     >
-                      Ad
-                    </Label>{" "}
-                    <Input
-                      id="firstName"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="lastName"
-                      className="text-muted-foreground font-semibold text-sm"
-                    >
-                      Soyad
-                    </Label>{" "}
-                    <Input
-                      id="lastName"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                </div>{" "}
-                <div className="space-y-2">
-                  {" "}
-                  <Label
-                    htmlFor="address"
-                    className="text-muted-foreground font-semibold text-sm"
-                  >
-                    Adres
-                  </Label>{" "}
-                  <Input
-                    id="address"
-                    required
-                    placeholder="Mahalle, sokak, bina no..."
-                    className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                  />{" "}
-                </div>{" "}
-                <div className="grid grid-cols-2 gap-4">
-                  {" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="city"
-                      className="text-muted-foreground font-semibold text-sm"
-                    >
-                      İl
-                    </Label>{" "}
-                    <Input
-                      id="city"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="zip"
-                      className="text-muted-foreground font-semibold text-sm"
-                    >
-                      Posta Kodu
-                    </Label>{" "}
-                    <Input
-                      id="zip"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
-              {/* Ödeme */}{" "}
+                      <Plus className="w-4 h-4 mr-2" /> Yeni Adres Ekle
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {renderAddressForm(formData, setFormData, isAddingNewAddress)}
+                    {user && addresses.length > 0 && (
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        className="w-full h-12 text-muted-foreground"
+                        onClick={() => setIsAddingNewAddress(false)}
+                      >
+                        Vazgeç ve Kayıtlı Adreslerimden Seç
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                {/* Billing Address Switch */}
+                <div className="pt-2">
+                  <label className="flex items-center space-x-3 cursor-pointer group p-3 bg-muted/30 rounded-xl border border-transparent hover:border-border transition-colors">
+                    <div className="relative flex items-center justify-center">
+                      <input 
+                        type="checkbox" 
+                        checked={useSameAddressForBilling}
+                        onChange={(e) => setUseSameAddressForBilling(e.target.checked)}
+                        className="peer appearance-none w-5 h-5 border-2 border-muted-foreground rounded checked:border-primary checked:bg-primary transition-all cursor-pointer"
+                      />
+                      <Check className="w-3 h-3 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100" />
+                    </div>
+                    <span className="font-semibold text-sm text-foreground">Fatura adresim, teslimat adresim ile aynı</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Fatura Adresi */}
+              {!useSameAddressForBilling && (
+                <div className="space-y-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-4 duration-300">
+                  <h2 className="text-lg font-bold text-foreground">
+                    Fatura Adresi
+                  </h2>
+                  
+                  {user && !isAddingBillingAddress ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {addresses.map((address) => (
+                          <div
+                            key={address.id}
+                            onClick={() => setSelectedBillingAddressId(address.id)}
+                            className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${
+                              selectedBillingAddressId === address.id 
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                              : 'border-border bg-background hover:border-primary/50'
+                            }`}
+                          >
+                            {selectedBillingAddressId === address.id && (
+                              <div className="absolute top-4 right-4 text-primary">
+                                <Check className="w-5 h-5" />
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="w-4 h-4 text-primary" />
+                              <h3 className="font-bold text-foreground text-sm">{address.title}</h3>
+                            </div>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p className="font-semibold text-foreground">{address.full_name}</p>
+                              <p className="line-clamp-2">{address.address_line}</p>
+                              <p>{address.city} {address.zip_code && `, ${address.zip_code}`}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-xl border-dashed h-12"
+                        onClick={() => setIsAddingBillingAddress(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Yeni Fatura Adresi Ekle
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {renderAddressForm(billingFormData, setBillingFormData, !useSameAddressForBilling && isAddingBillingAddress)}
+                      {user && addresses.length > 0 && (
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          className="w-full h-12 text-muted-foreground"
+                          onClick={() => setIsAddingBillingAddress(false)}
+                        >
+                          Vazgeç ve Kayıtlı Adreslerimden Seç
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Ödeme */}
               <div className="space-y-4 pt-4 border-t border-border">
-                {" "}
                 <h2 className="text-lg font-bold text-foreground">
-                  Ödeme Bilgileri
-                </h2>{" "}
-                <div className="space-y-2">
-                  {" "}
-                  <Label
-                    htmlFor="cardName"
-                    className="text-muted-foreground font-semibold text-sm"
-                  >
-                    Kart Üzerindeki İsim
-                  </Label>{" "}
-                  <Input
-                    id="cardName"
-                    required
-                    className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                  />{" "}
-                </div>{" "}
-                <div className="space-y-2">
-                  {" "}
-                  <Label
-                    htmlFor="cardNumber"
-                    className="text-muted-foreground font-semibold text-sm"
-                  >
-                    Kart Numarası
-                  </Label>{" "}
-                  <Input
-                    id="cardNumber"
-                    placeholder="0000 0000 0000 0000"
-                    required
-                    className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                  />{" "}
-                </div>{" "}
-                <div className="grid grid-cols-2 gap-4">
-                  {" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="expiry"
-                      className="text-muted-foreground font-semibold text-sm"
-                    >
-                      Son Kullanma (AA/YY)
-                    </Label>{" "}
-                    <Input
-                      id="expiry"
-                      placeholder="MM/YY"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                  <div className="space-y-2">
-                    {" "}
-                    <Label
-                      htmlFor="cvv"
-                      className="text-muted-foreground font-semibold text-sm"
-                    >
-                      CVV
-                    </Label>{" "}
-                    <Input
-                      id="cvv"
-                      placeholder="123"
-                      required
-                      className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-                    />{" "}
-                  </div>{" "}
-                </div>{" "}
-              </div>{" "}
+                  Banka Havalesi / EFT ile Ödeme
+                </h2>
+                
+                <div className="p-4 bg-muted/50 rounded-xl border border-border">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Lütfen toplam sipariş tutarını aşağıdaki banka hesabımıza gönderiniz. Açıklama kısmına <span className="font-bold text-foreground">siparişinizi oluşturduğunuz İsim ve Soyisimi</span> yazmayı unutmayınız. Ödemeniz onaylandıktan sonra siparişiniz hazırlanacaktır.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 bg-background border border-border rounded-xl space-y-4 shadow-sm">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <Building className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Banka & Alıcı Adı</p>
+                      <p className="font-bold text-foreground text-sm sm:text-base">{bankInfo.bankName || "Yücel Avize Ltd. Şti."}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-muted p-3 rounded-lg border border-border">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IBAN Numarası</p>
+                    <p className="font-mono font-bold text-foreground sm:text-lg break-all">
+                      {bankInfo.iban || "TR00 0000 0000 0000 0000 0000 00"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <Button
                 type="submit"
                 disabled={isSubmitting || cart.items.length === 0}
@@ -274,28 +628,24 @@ export default function CheckoutPage() {
               >
                 {isSubmitting
                   ? "İşleniyor..."
-                  : `₺${cart.getFinalTotal().toLocaleString("tr-TR")} Öde ve Siparişi Tamamla`}
+                  : `Havale ile Siparişi Tamamla (₺${cart.getFinalTotal().toLocaleString("tr-TR")})`}
               </Button>
-            </form>{" "}
-          </div>{" "}
-          {/* Order Summary Sidebar */}{" "}
+            </form>
+          </div>
+          
+          {/* Order Summary Sidebar */}
           <div className="lg:col-span-5">
-            {" "}
             <div className="bg-background border border-border rounded-[32px] p-6 sm:p-10 sticky top-28 shadow-sm">
-              {" "}
               <h2 className="text-xl font-black text-foreground mb-6">
                 Sipariş Özeti
-              </h2>{" "}
+              </h2>
               <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-                {" "}
                 {cart.items.map((item, idx) => (
                   <div
                     key={`${item.product.id}-${item.color || idx}`}
                     className="flex gap-4"
                   >
-                    {" "}
                     <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-muted border border-border flex-shrink-0">
-                      {" "}
                       <Image
                         src={
                           item.product.images?.[0] ||
@@ -304,38 +654,34 @@ export default function CheckoutPage() {
                         alt={item.product.name}
                         fill
                         className="object-cover"
-                      />{" "}
+                      />
                       <div className="absolute -top-2 -right-2 bg-foreground text-background text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                        {" "}
-                        {item.quantity}{" "}
-                      </div>{" "}
-                    </div>{" "}
+                        {item.quantity}
+                      </div>
+                    </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      {" "}
                       <h4 className="font-bold text-sm text-foreground line-clamp-1">
                         {item.product.name}
-                      </h4>{" "}
+                      </h4>
                       {item.color && (
                         <p className="text-[10px] font-medium text-muted-foreground mt-0.5">
-                          {" "}
                           Renk:{" "}
                           <span className="text-muted-foreground">
                             {item.color}
-                          </span>{" "}
+                          </span>
                         </p>
-                      )}{" "}
+                      )}
                       <p className="text-sm font-semibold text-muted-foreground mt-1">
                         ₺
                         {(item.product.price * item.quantity).toLocaleString(
                           "tr-TR",
                         )}
-                      </p>{" "}
-                    </div>{" "}
+                      </p>
+                    </div>
                   </div>
-                ))}{" "}
-              </div>{" "}
+                ))}
+              </div>
               <div className="border-t border-border pt-6 space-y-4">
-                {" "}
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span className="font-medium text-sm">Ara Toplam</span>
                   <span className="font-bold text-foreground">
@@ -366,11 +712,11 @@ export default function CheckoutPage() {
                     ₺{cart.getFinalTotal().toLocaleString("tr-TR")}
                   </span>
                 </div>
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </div>{" "}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

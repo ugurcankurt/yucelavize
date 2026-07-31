@@ -270,12 +270,11 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
                           Hoş geldin,
                         </span>{" "}
                         <span className="font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          {" "}
-                          {profile?.full_name?.split("")[0] ||
+                          {profile?.full_name?.split(" ")[0] ||
                             user.email?.split("@")[0] ||
-                            "Hesabım"}{" "}
-                          <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-primary" />{" "}
-                        </span>{" "}
+                            "Hesabım"}
+                          <ChevronDown className="w-3 h-3 ml-1 text-muted-foreground group-hover:text-primary" />
+                        </span>
                       </div>{" "}
                     </div>
                   }

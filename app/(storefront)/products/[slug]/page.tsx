@@ -1,14 +1,14 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ShieldCheck, Truck, ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Home } from "lucide-react";
 import { ProductGallery } from "./product-gallery";
-import { ProductDetailsAccordion } from "./product-details-accordion";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { FavoriteButton } from "@/components/storefront/favorite-button";
 import { ProductDimensions } from "@/components/storefront/product-dimensions";
 import { ProductActionSection } from "@/components/storefront/product-action-section";
+import { ProductCard } from "@/components/storefront/product-card";
+import { ProductReviews } from "@/components/storefront/product-reviews";
 // Dynamic Metadata generation for SEO 2026 guidelines
 export async function generateMetadata({
   params,
@@ -56,16 +56,84 @@ export default async function ProductDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let isFavorite = false;
+  let userFavorites: string[] = [];
   if (user) {
-    const { data: fav } = await supabase
+    const { data: favs } = await supabase
       .from("favorites")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("product_id", product.id)
-      .single();
-    if (fav) isFavorite = true;
+      .select("product_id")
+      .eq("user_id", user.id);
+    if (favs) {
+      userFavorites = favs.map((f) => f.product_id);
+    }
   }
+  const isFavorite = userFavorites.includes(product.id);
+
+  // Fetch Reviews
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("product_id", product.id)
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
+
+  const safeReviews = reviews || [];
+
+  const userIds = [...new Set(safeReviews.map(r => r.user_id).filter(Boolean))];
+  let profilesMap: Record<string, string | null> = {};
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, avatar_url")
+      .in("id", userIds);
+      
+    if (profiles) {
+      profilesMap = profiles.reduce((acc, p) => {
+        acc[p.id] = p.avatar_url;
+        return acc;
+      }, {} as Record<string, string | null>);
+    }
+  }
+
+  const enrichedReviews = safeReviews.map(r => ({
+    ...r,
+    user_avatar: profilesMap[r.user_id] || null
+  }));
+  // Determine review eligibility
+  let isEligible = false;
+  if (user) {
+    const { data: orderItem } = await supabase
+      .from("order_items")
+      .select(`
+        id,
+        orders!inner(user_id, status)
+      `)
+      .eq("product_id", product.id)
+      .eq("orders.user_id", user.id)
+      .eq("orders.status", "delivered")
+      .limit(1);
+    
+    if (orderItem && orderItem.length > 0) {
+      // Check if user has already reviewed this product
+      const { data: existingReview } = await supabase
+        .from("reviews")
+        .select("id")
+        .eq("product_id", product.id)
+        .eq("user_id", user.id)
+        .limit(1);
+        
+      if (!existingReview || existingReview.length === 0) {
+        isEligible = true;
+      }
+    }
+  }
+
+  // Fetch related products
+  const { data: relatedProducts } = await supabase
+    .from("products")
+    .select("*, category:categories(name, slug), features, reviews(rating, status)")
+    .eq("category_id", product.category_id)
+    .neq("id", product.id)
+    .limit(4);
 
   // Fetch active campaign
   const { data: activeCampaign } = await supabase
@@ -96,22 +164,54 @@ export default async function ProductDetailPage({
     }
   }
   // Schema.org Product JSON-LD for Google SEO (2026 Merchant specs supported)
+  const reviewCount = safeReviews.length;
+  let aggregateRating = null;
+  let jsonLdReviews = undefined;
+
+  if (reviewCount > 0) {
+    const sum = safeReviews.reduce((acc, r) => acc + r.rating, 0);
+    const avg = (sum / reviewCount).toFixed(1);
+    
+    aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: avg,
+      reviewCount: reviewCount
+    };
+
+    jsonLdReviews = safeReviews.map(r => ({
+      "@type": "Review",
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: r.rating,
+        bestRating: "5"
+      },
+      author: {
+        "@type": "Person",
+        name: r.user_name
+      },
+      reviewBody: r.comment,
+      datePublished: new Date(r.created_at).toISOString().split('T')[0]
+    }));
+  }
+
   const jsonLd = {
-    "@context":"https://schema.org",
-    "@type":"Product",
+    "@context": "https://schema.org",
+    "@type": "Product",
     name: product.name,
     image: product.images,
     description: product.description,
     sku: product.sku,
-    brand: { "@type":"Brand", name:"Yücel Avize" },
+    brand: { "@type": "Brand", name: "Yücel Avize" },
     offers: {
-      "@type":"Offer",
+      "@type": "Offer",
       url: `https://yucelavize.com/products/${product.slug}`,
-      priceCurrency:"TRY",
+      priceCurrency: "TRY",
       price: finalPrice,
-      itemCondition:"https://schema.org/NewCondition",
-      availability: product.stock > 0 ?"https://schema.org/InStock" :"https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     },
+    ...(aggregateRating ? { aggregateRating } : {}),
+    ...(jsonLdReviews ? { review: jsonLdReviews } : {})
   };
   const images: string[] = product.images && product.images.length > 0 ? product.images : ["https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=2000&auto=format&fit=crop"];
   // Fallback
@@ -127,150 +227,155 @@ export default async function ProductDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />{" "}
-      <div className="w-full pb-40 lg:pb-12">
+      <div className="w-full pb-8 lg:pb-8">
         {/* Breadcrumb Navigation - Desktop Only */}
-        <div className="container mx-auto px-4 mt-8 md:mt-12 hidden lg:block">
-          <nav className="flex items-center text-sm text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap pb-2">
-          {" "}
-          <Link
-            href="/"
-            className="flex items-center hover:text-foreground transition-colors"
-          >
+        <div className="container mx-auto px-4 mt-4 hidden lg:block">
+          <nav className="flex items-center text-sm text-muted-foreground mb-4 overflow-x-auto whitespace-nowrap pb-2">
             {" "}
-            <Home className="w-4 h-4 mr-1" /> Ana Sayfa{" "}
-          </Link>{" "}
-          <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0" />{" "}
-          <Link
-            href="/products"
-            className="hover:text-foreground transition-colors"
-          >
-            {" "}
-            Tüm Ürünler{" "}
-          </Link>{" "}
-          <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0" />{" "}
-          <span className="font-medium text-foreground truncate">
-            {product.name}
-          </span>{" "}
+            <Link
+              href="/"
+              className="flex items-center hover:text-foreground transition-colors"
+            >
+              {" "}
+              <Home className="w-4 h-4 mr-1" /> Ana Sayfa{" "}
+            </Link>{" "}
+            <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0" />{" "}
+            <Link
+              href="/products"
+              className="hover:text-foreground transition-colors"
+            >
+              {" "}
+              Tüm Ürünler{" "}
+            </Link>{" "}
+            <ChevronRight className="w-4 h-4 mx-2 flex-shrink-0" />{" "}
+            <span className="font-medium text-foreground truncate">
+              {product.name}
+            </span>{" "}
           </nav>
         </div>
-        
+
         <div className="container mx-auto px-0 lg:px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-20">
             {/* Interactive Image Gallery */}
-          <div id="product-gallery" className="w-full -mt-8 lg:mt-0 lg:sticky lg:top-24 h-max relative z-0">
-            <ProductGallery
-              images={images}
-              productName={product.name}
-              productId={product.id}
-              initialIsFavorite={isFavorite}
-              colorMapping={product.features?.colorMapping}
-            />
-          </div>
-          {/* Product Info */}
-          <div className="flex flex-col px-4 lg:px-0 pt-6 lg:pt-2 animate-in fade-in duration-700">
-            {" "}
-            <div className="mb-6 flex gap-2">
-              {" "}
-              <Badge variant="secondary" className="font-medium">
-                {" "}
-                {categoryName}{" "}
-              </Badge>{" "}
-              {product.stock > 0 && product.stock <= 5 && (
-                <Badge
-                  variant="destructive"
-                  className="bg-destructive/10 text-destructive hover:bg-destructive/10"
-                >
-                  {" "}
-                  Son {product.stock} Ürün{" "}
-                </Badge>
-              )}{" "}
-              {product.stock === 0 && (
-                <Badge variant="outline" className="text-muted-foreground">
-                  Tükendi
-                </Badge>
-              )}
-              {hasDiscount && (
-                <Badge variant="destructive" className="uppercase font-bold tracking-wider">
-                  {discountBadge}
-                </Badge>
-              )}
+            <div id="product-gallery" className="w-full -mt-8 lg:mt-0 lg:sticky lg:top-24 h-max relative z-0">
+              <ProductGallery
+                images={images}
+                productName={product.name}
+                productId={product.id}
+                initialIsFavorite={isFavorite}
+                colorMapping={product.features?.colorMapping}
+              />
             </div>
-            <div className="mb-8">
+            {/* Product Info */}
+            <div className="flex flex-col px-4 lg:px-0 pt-6 lg:pt-2 animate-in fade-in duration-700">
               {" "}
-              <div className="flex items-start justify-between gap-4">
+              <div className="mb-6 flex gap-2">
                 {" "}
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4 leading-[1.1]">
+                <Badge variant="secondary" className="font-medium">
                   {" "}
-                  {product.name}{" "}
-                </h1>{" "}
-              </div>{" "}
-              <div className="flex items-baseline gap-4 mt-2">
-                <p className="text-4xl font-bold text-foreground">
-                  ₺{finalPrice.toLocaleString("tr-TR")}
-                </p>
-                {(hasDiscount || product.price > finalPrice) ? (
-                  <p className="text-lg text-muted-foreground line-through decoration-border dark:decoration-border">
-                    ₺{product.price.toLocaleString("tr-TR")}
-                  </p>
-                ) : (
-                  <p className="text-lg text-muted-foreground line-through decoration-border dark:decoration-border">
-                    ₺{Math.round(product.price * 1.2).toLocaleString("tr-TR")}
-                  </p>
+                  {categoryName}{" "}
+                </Badge>{" "}
+                {product.stock > 0 && product.stock <= 5 && (
+                  <Badge
+                    variant="destructive"
+                    className="bg-destructive/10 text-destructive hover:bg-destructive/10"
+                  >
+                    {" "}
+                    Son {product.stock} Ürün{" "}
+                  </Badge>
+                )}{" "}
+                {product.stock === 0 && (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Tükendi
+                  </Badge>
+                )}
+                {hasDiscount && (
+                  <Badge variant="destructive" className="uppercase font-bold tracking-wider">
+                    {discountBadge}
+                  </Badge>
                 )}
               </div>
+              <div className="mb-8">
+                {" "}
+                <div className="flex items-start justify-between gap-4">
+                  {" "}
+                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4 leading-[1.1]">
+                    {" "}
+                    {product.name}{" "}
+                  </h1>{" "}
+                </div>{" "}
+                <div className="flex items-baseline gap-4 mt-2">
+                  <p className="text-4xl font-bold text-foreground">
+                    ₺{finalPrice.toLocaleString("tr-TR")}
+                  </p>
+                  {(hasDiscount || product.price > finalPrice) ? (
+                    <p className="text-lg text-muted-foreground line-through decoration-border dark:decoration-border">
+                      ₺{product.price.toLocaleString("tr-TR")}
+                    </p>
+                  ) : (
+                    <p className="text-lg text-muted-foreground line-through decoration-border dark:decoration-border">
+                      ₺{Math.round(product.price * 1.2).toLocaleString("tr-TR")}
+                    </p>
+                  )}
+                </div>
 
-            </div>{" "}
-            <ProductActionSection
-              product={{
-                id: product.id,
-                name: product.name,
-                slug: product.slug,
-                price: finalPrice,
-                images: images,
-              }}
-              colors={product.features?.colors}
-            />
-            <div className="grid grid-cols-2 gap-6 mb-8 bg-success/10 p-6 rounded-2xl border border-success/20">
-              {" "}
-              <div className="flex flex-col gap-2">
-                {" "}
-                <div className="flex items-center gap-2 font-semibold text-foreground">
-                  {" "}
-                  <div className="w-8 h-8 rounded-full bg-success/20 dark:bg-success/20 flex items-center justify-center text-success dark:text-success">
-                    {" "}
-                    <ShieldCheck className="w-4 h-4" />{" "}
-                  </div>{" "}
-                  2 Yıl Garanti{" "}
-                </div>{" "}
-                <p className="text-sm text-muted-foreground ml-10">
-                  Resmi Yücel Avize güvencesiyle.
-                </p>{" "}
               </div>{" "}
-              <div className="flex flex-col gap-2">
-                {" "}
-                <div className="flex items-center gap-2 font-semibold text-foreground">
-                  {" "}
-                  <div className="w-8 h-8 rounded-full bg-info/20 flex items-center justify-center text-primary">
-                    {" "}
-                    <Truck className="w-4 h-4" />{" "}
-                  </div>{" "}
-                  Ücretsiz Kargo{" "}
-                </div>{" "}
-                <p className="text-sm text-muted-foreground ml-10">
-                  Özenle paketlenmiş, sigortalı gönderim.
-                </p>{" "}
-              </div>{" "}
-            </div>{" "}
-            {/* Product Dimensions Visualizer */}{" "}
-            <ProductDimensions
-              width={product.features?.dimensions?.width}
-              height={product.features?.dimensions?.height}
-              depth={product.features?.dimensions?.depth}
-            />{" "}
-            <ProductDetailsAccordion description={product.description} />
+              <ProductActionSection
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  price: finalPrice,
+                  images: images,
+                }}
+                colors={product.features?.colors}
+              />
+
+              <div className="w-full mt-4 mb-6">
+                <h3 className="text-xl font-bold text-foreground mb-3">Ürün Açıklaması</h3>
+                <div
+                  className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: product.description }}
+                />
+              </div>
+
+              {/* Product Dimensions Visualizer */}{" "}
+              <ProductDimensions
+                width={product.features?.dimensions?.width}
+                height={product.features?.dimensions?.height}
+                depth={product.features?.dimensions?.depth}
+              />{" "}
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Müşteri Yorumları */}
+        <div className="container mx-auto px-4 mt-8">
+          <ProductReviews 
+            productId={product.id} 
+            reviews={enrichedReviews} 
+            isEligible={isEligible} 
+          />
+        </div>
+
+        {/* Benzer Ürünler */}
+        {relatedProducts && relatedProducts.length > 0 && (
+          <div className="container mx-auto px-4 mt-16 lg:mt-24 border-t border-border pt-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
+              Benzer Ürünler
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                  isFavorite={userFavorites.includes(relatedProduct.id)}
+                  activeCampaign={activeCampaign}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

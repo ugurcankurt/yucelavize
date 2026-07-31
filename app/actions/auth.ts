@@ -30,7 +30,7 @@ export async function signup(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -45,9 +45,13 @@ export async function signup(formData: FormData) {
     return { error: error.message };
   }
 
-  // Next, user needs to login or confirm email depending on settings. 
-  // We'll redirect them to login page.
-  redirect("/auth/login?registered=true");
+  // If email confirmations are disabled, data.session will be present
+  if (data.session) {
+    redirect("/account");
+  } else {
+    // Otherwise, they need to confirm their email
+    redirect("/auth/login?registered=true");
+  }
 }
 
 export async function logout() {
@@ -92,5 +96,23 @@ export async function removeAvatarUrl() {
   }
 
   revalidatePath("/", "layout");
+  return { success: true };
+}
+
+export async function updatePassword(password: string) {
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return { error: "Oturumunuzun süresi dolmuş olabilir. Lütfen tekrar giriş yapın." };
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
   return { success: true };
 }

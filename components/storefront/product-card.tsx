@@ -47,6 +47,14 @@ export function ProductCard({
     }
   }
 
+  // Calculate rating
+  const approvedReviews = (product.reviews || []).filter((r: any) => r.status === 'approved');
+  const reviewCount = approvedReviews.length;
+  let avgRating = "0.0";
+  if (reviewCount > 0) {
+    avgRating = (approvedReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviewCount).toFixed(1);
+  }
+
   return (
     <Link
       href={`/products/${product.slug}`}
@@ -102,10 +110,12 @@ export function ProductCard({
             <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
               {product.name}
             </h3>
-            <div className="flex items-center gap-1 shrink-0 mt-[2px]">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-[12px] sm:text-[13px] font-bold text-foreground">4.9</span>
-            </div>
+            {reviewCount > 0 && (
+              <div className="flex items-center gap-1 shrink-0 mt-[2px]">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span className="text-[12px] sm:text-[13px] font-bold text-foreground">{avgRating}</span>
+              </div>
+            )}
           </div>
           
           <span className="text-[12px] sm:text-[13px] font-medium text-muted-foreground mb-3">

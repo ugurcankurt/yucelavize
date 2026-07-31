@@ -21,6 +21,23 @@ export default async function StorefrontLayout({
       .eq("id", user.id)
       .single();
     profile = data;
+
+    // Auto-sync profile if metadata has avatar_url or full_name that isn't in profiles
+    if (profile) {
+      const metaAvatar = user.user_metadata?.avatar_url;
+      const metaName = user.user_metadata?.full_name;
+      const needsAvatarSync = metaAvatar && profile.avatar_url !== metaAvatar;
+      const needsNameSync = metaName && profile.full_name !== metaName;
+      
+      if (needsAvatarSync || needsNameSync) {
+        const updateData: any = {};
+        if (needsAvatarSync) updateData.avatar_url = metaAvatar;
+        if (needsNameSync) updateData.full_name = metaName;
+        
+        await supabase.from("profiles").update(updateData).eq("id", user.id);
+        profile = { ...profile, ...updateData };
+      }
+    }
   }
   const { data: categories } = await supabase
     .from("categories")

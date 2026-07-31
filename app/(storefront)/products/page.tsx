@@ -18,7 +18,7 @@ export default async function ProductsPage({
   let query = supabase
     .from("products")
     .select(
-      "id, name, slug, price, discounted_price, images, stock, category:categories!inner(name, slug)",
+      "id, name, slug, price, discounted_price, images, stock, category:categories!inner(name, slug), reviews(rating, status)",
     );
   if (
     resolvedSearchParams.search &&

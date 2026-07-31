@@ -186,7 +186,7 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
         overlayClassName={isMobile ? "z-[49]" : ""}
         className={
           isMobile && !isLandscapeMobile
-            ? "flex flex-col w-full h-full max-h-[85dvh] rounded-b-[32px] z-[49] pt-[90px] px-0 pb-0"
+            ? "flex flex-col w-full h-full max-h-[85dvh] rounded-b-[32px] z-[49] pt-[48px] px-0 pb-0"
             : isLandscapeMobile
               ? "flex flex-col w-full sm:max-w-md p-0 z-[49]"
               : "flex flex-col w-full sm:max-w-md p-0"
