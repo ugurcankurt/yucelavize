@@ -1,5 +1,5 @@
 "use client";
-import { Home, Package, ShoppingCart, Users, Settings, ImageIcon } from "lucide-react";
+import { Home, Package, ShoppingCart, Users, Settings, ImageIcon, FileText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +22,8 @@ const items = [
   { title: "Banner Yönetimi", url: "/admin/banners", icon: ImageIcon },
   { title: "Kampanyalar", url: "/admin/campaigns", icon: Package },
   { title: "Kuponlar", url: "/admin/coupons", icon: Package },
+  { title: "Markalar", url: "/admin/brands", icon: ImageIcon },
+  { title: "Blog Yönetimi", url: "/admin/blog", icon: FileText },
   { title: "Ayarlar", url: "/admin/settings", icon: Settings },
 ];
 export function AppSidebar() {

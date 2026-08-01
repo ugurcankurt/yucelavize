@@ -43,6 +43,20 @@ export default async function Home() {
   const largeBanner = banners?.find(b => b.is_large);
   const smallBanners = banners?.filter(b => !b.is_large).slice(0, 2);
 
+  const { data: brands } = await supabase
+    .from("brands")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  const { data: latestBlogs } = await supabase
+    .from("blog_posts")
+    .select("id, title, slug, cover_image_url, category:category_id(name)")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(2);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -281,78 +295,100 @@ export default async function Home() {
           </div>{" "}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-0 border border-border rounded-2xl overflow-hidden bg-background">
             {" "}
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[2/1] border-[0.5px] border-border flex items-center justify-center p-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer"
-              >
-                {" "}
-                <span className="font-black text-xl tracking-widest text-foreground uppercase">
-                  Brand {i + 1}
-                </span>{" "}
-              </div>
-            ))}{" "}
+            {brands && brands.length > 0 ? (
+              brands.map((brand) => (
+                brand.url ? (
+                  <Link
+                    key={brand.id}
+                    href={brand.url}
+                    className="aspect-[2/1] border-[0.5px] border-border flex items-center justify-center p-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer relative"
+                  >
+                    <Image src={brand.image_url} alt={brand.name} fill className="object-contain p-4" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw" />
+                  </Link>
+                ) : (
+                  <div
+                    key={brand.id}
+                    className="aspect-[2/1] border-[0.5px] border-border flex items-center justify-center p-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all relative"
+                  >
+                    <Image src={brand.image_url} alt={brand.name} fill className="object-contain p-4" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw" />
+                  </div>
+                )
+              ))
+            ) : (
+              Array.from({ length: 12 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[2/1] border-[0.5px] border-border flex items-center justify-center p-6 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer"
+                >
+                  <span className="font-black text-xl tracking-widest text-foreground uppercase">
+                    Brand {i + 1}
+                  </span>
+                </div>
+              ))
+            )}
           </div>{" "}
         </div>{" "}
       </section>{" "}
-      {/* 7. Recent Post */}{" "}
-      <section className="w-full py-12 py-20">
-        {" "}
-        <div className="container mx-auto px-4">
-          {" "}
-          <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-8">
-            Son Yazılar
-          </h2>{" "}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {" "}
-            <Link
-              href="#"
-              className="md:col-span-2 relative h-[400px] rounded-3xl overflow-hidden group"
-            >
-              {" "}
-              <Image
-                src="https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=1200&auto=format&fit=crop"
-                alt="Blog 1"
-                fill
-                sizes="(max-width: 768px) 100vw, 66vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />{" "}
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>{" "}
-              <div className="absolute bottom-0 left-0 p-10 max-w-lg">
-                {" "}
-                <span className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest border border-border/30 px-3 py-1 rounded-full mb-4 inline-block backdrop-blur-md">
-                  Aydınlatma
-                </span>{" "}
-                <h3 className="text-4xl font-black text-foreground leading-tight mt-4">
-                  Aktif yaşam alanları için modern çözümler
-                </h3>{" "}
-              </div>{" "}
-            </Link>{" "}
-            <Link
-              href="#"
-              className="relative h-[400px] rounded-3xl overflow-hidden group bg-primary"
-            >
-              {" "}
-              <Image
-                src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=800&auto=format&fit=crop"
-                alt="Blog 2"
-                fill
-                sizes="(max-width: 768px) 100vw, 33vw"
-                className="object-cover opacity-40 mix-blend-overlay transition-transform duration-700 group-hover:scale-105"
-              />{" "}
-              <div className="absolute bottom-0 left-0 p-10">
-                {" "}
-                <span className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest border border-border/30 px-3 py-1 rounded-full mb-4 inline-block backdrop-blur-md">
-                  Dekorasyon
-                </span>{" "}
-                <h3 className="text-3xl font-black text-foreground leading-tight mt-4">
-                  Çağdaş evler için tasarım ipuçları
-                </h3>{" "}
-              </div>{" "}
-            </Link>{" "}
-          </div>{" "}
-        </div>{" "}
-      </section>{" "}
+      {latestBlogs && latestBlogs.length > 0 && (
+        <section className="w-full py-12 py-20">
+          <div className="container mx-auto px-4">
+            <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-8">
+              Son Yazılar
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {latestBlogs[0] && (
+                <Link
+                  href={`/blog/${latestBlogs[0].slug}`}
+                  className="md:col-span-2 relative h-[400px] rounded-3xl overflow-hidden group"
+                >
+                  <Image
+                    src={latestBlogs[0].cover_image_url || "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=1200&auto=format&fit=crop"}
+                    alt={latestBlogs[0].title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 66vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-10 max-w-lg">
+                    {(latestBlogs[0].category as any)?.name && (
+                      <span className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest border border-border/30 px-3 py-1 rounded-full mb-4 inline-block backdrop-blur-md">
+                        {(latestBlogs[0].category as any).name}
+                      </span>
+                    )}
+                    <h3 className="text-4xl font-black text-foreground leading-tight mt-4">
+                      {latestBlogs[0].title}
+                    </h3>
+                  </div>
+                </Link>
+              )}
+              {latestBlogs[1] && (
+                <Link
+                  href={`/blog/${latestBlogs[1].slug}`}
+                  className="relative h-[400px] rounded-3xl overflow-hidden group bg-primary"
+                >
+                  <Image
+                    src={latestBlogs[1].cover_image_url || "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=800&auto=format&fit=crop"}
+                    alt={latestBlogs[1].title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover opacity-40 mix-blend-overlay transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 left-0 p-10">
+                    {(latestBlogs[1].category as any)?.name && (
+                      <span className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest border border-border/30 px-3 py-1 rounded-full mb-4 inline-block backdrop-blur-md">
+                        {(latestBlogs[1].category as any).name}
+                      </span>
+                    )}
+                    <h3 className="text-3xl font-black text-foreground leading-tight mt-4">
+                      {latestBlogs[1].title}
+                    </h3>
+                  </div>
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -5,11 +5,49 @@ import { ProductsFilter } from "@/components/storefront/products-filter";
 import { PageHero } from "@/components/storefront/page-hero";
 import { getUserFavorites } from "@/lib/services/user-service";
 
-export const metadata = {
-  title: "Tüm Ürünler | Yücel Avize",
-  description:
-    "Yücel Avize'nin lüks ve modern aydınlatma koleksiyonunu keşfedin.",
-};
+import { Metadata, ResolvingMetadata } from "next";
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export async function generateMetadata(
+  { searchParams }: { searchParams: SearchParams },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const resolvedSearchParams = await searchParams;
+  const categorySlug = resolvedSearchParams.category as string | undefined;
+
+  let title = "Tüm Ürünler | Yücel Avize";
+  let description = "Yücel Avize'nin lüks ve modern aydınlatma koleksiyonunu keşfedin.";
+
+  if (categorySlug) {
+    const supabase = await createClient();
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("name, description")
+      .eq("slug", categorySlug)
+      .single();
+
+    if (cat) {
+      title = `${cat.name} | Yücel Avize`;
+      description = cat.description || `${cat.name} kategorisindeki özel koleksiyonumuzu keşfedin.`;
+    }
+  }
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 export default async function ProductsPage({
   searchParams,
 }: {
@@ -94,8 +132,22 @@ export default async function ProductsPage({
       ? [{ label: "Arama Sonuçları" }]
       : [{ label: "Tüm Ürünler" }];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": (products || []).map((product, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://yucelavize.com/products/${product.slug}`
+    }))
+  };
+
   return (
     <div className="w-full bg-background font-sans min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHero
         title={pageTitle}
         description={pageDescription}

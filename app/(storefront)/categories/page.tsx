@@ -13,8 +13,22 @@ export const metadata: Metadata = {
 export default async function CategoriesPage() {
   const categories = await getCachedCategories();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": (categories || []).map((category, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://yucelavize.com/products?category=${category.slug}`
+    }))
+  };
+
   return (
     <div className="w-full">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <PageHero
         title="Tüm Koleksiyonlar"
         description="Evinizin her köşesi için özenle tasarlanmış aydınlatma ve aksesuar koleksiyonlarımızı keşfedin."

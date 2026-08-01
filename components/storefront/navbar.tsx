@@ -94,6 +94,9 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
               <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors">
                 Koleksiyonlar
               </Link>
+              <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors">
+                Blog
+              </Link>
             </nav>
           </div>
           <SearchBar variant="desktop" />

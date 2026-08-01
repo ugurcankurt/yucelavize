@@ -21,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://yucelavize.com'),
   title: "Yücel Avize | Premium Aydınlatma ve Avize Modelleri",
   description:
     "Türkiye'nin lüks ve premium avize mağazası. En şık, modern ve klasik avize modelleriyle evinizi aydınlatın.",
@@ -47,6 +48,27 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://jzqhcopfzejewhqjaisp.supabase.co" />
       </head>
       <body className="min-h-screen flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Yücel Avize",
+              "url": "https://yucelavize.com",
+              "logo": "https://yucelavize.com/logo.png",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+90-555-000-0000",
+                "contactType": "customer service"
+              },
+              "sameAs": [
+                "https://instagram.com/yucelavize",
+                "https://facebook.com/yucelavize"
+              ]
+            })
+          }}
+        />
         {children}
         <Toaster />
         <Analytics />
