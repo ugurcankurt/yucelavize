@@ -163,7 +163,10 @@ export default async function AdminProducts({
                     ₺{product.price.toLocaleString("tr-TR")}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={product.stock > 10 ? "success" : product.stock > 0 ? "warning" : "destructive"}>
+                    <Badge 
+                      variant={product.stock > 10 ? "default" : product.stock > 0 ? "secondary" : "destructive"}
+                      className={product.stock > 10 ? "bg-green-500 hover:bg-green-600" : product.stock > 0 ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+                    >
                       {product.stock} adet
                     </Badge>
                   </TableCell>

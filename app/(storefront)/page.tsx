@@ -19,9 +19,12 @@ import {
 import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { HeroSlider } from "@/components/storefront/hero-slider";
+import { getReviewsWithPhotos } from "@/app/actions/reviews";
+import { PhotoReviewsSlider } from "@/components/storefront/photo-reviews-slider";
 
 export default async function Home() {
   const supabase = await createClient();
+  const photoReviews = await getReviewsWithPhotos();
   const { data: newArrivals } = await supabase
     .from("products")
     .select("id, name, slug, price, discounted_price, images, stock, category:categories(name), reviews(rating, status)")
@@ -72,13 +75,13 @@ export default async function Home() {
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
           <div className="flex flex-col min-w-[200px] shrink-0">
             <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-2">
-              Kategoriler
+              Koleksiyonlar
             </h2>
             <Link
-              href="/products"
+              href="/categories"
               className="text-primary font-semibold text-sm hover:text-primary/80 transition-colors"
             >
-              Tümünü Gör
+              Tüm Koleksiyonlar
             </Link>
           </div>
           
@@ -272,82 +275,10 @@ export default async function Home() {
         </div>
       </section>{" "}
       {/* 5. Featured Deals */}{" "}
-      <section className="w-full py-16">
-        {" "}
-        <div className="container mx-auto px-4">
-          {" "}
-          <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-8">
-            Öne Çıkan Fırsatlar
-          </h2>{" "}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {" "}
-            <div className="relative rounded-3xl overflow-hidden bg-primary flex flex-col md:flex-row items-center justify-between p-10 min-h-[300px]">
-              {" "}
-              <div className="relative z-10 text-foreground max-w-[240px]">
-                {" "}
-                <div className="w-8 h-8 mb-4">
-                  {" "}
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 22h20L12 2zm0 4.2l7.1 13.8H4.9L12 6.2z" />
-                  </svg>{" "}
-                </div>{" "}
-                <h3 className="text-3xl font-black mb-4 leading-tight">
-                  Özel indirimleri kaçırmayın
-                </h3>{" "}
-                <p className="text-sm text-foreground/70 mb-6">
-                  Şimdi alışveriş yapın ve sepette ek indirimlerden faydalanın.
-                </p>{" "}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary transition-colors"
-                >
-                  {" "}
-                  İncele{" "}
-                </Link>{" "}
-              </div>{" "}
-              <div className="absolute md:relative right-0 bottom-0 w-[200px] h-[250px] opacity-20 md:opacity-100">
-                {" "}
-                <Image
-                  src="https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=400&auto=format&fit=crop"
-                  alt="Deal 1"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover rounded-tl-[60px]"
-                />{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="relative rounded-3xl overflow-hidden bg-primary flex flex-col md:flex-row items-center justify-between p-10 min-h-[300px]">
-              {" "}
-              <div className="absolute left-10 top-1/2 -translate-y-1/2 w-[180px] h-[180px] hidden md:block">
-                {" "}
-                <Image
-                  src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=400&auto=format&fit=crop"
-                  alt="Deal 2"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover rounded-2xl shadow-xl"
-                />{" "}
-              </div>{" "}
-              <div className="relative z-10 text-foreground max-w-[220px] ml-auto">
-                {" "}
-                <h3 className="text-3xl font-black mb-4 leading-tight">
-                  Size özel hoş geldin fırsatı
-                </h3>{" "}
-                <p className="text-sm text-foreground/80 mb-6">
-                  İlk siparişinize özel sürpriz hediye kazanın.
-                </p>{" "}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary transition-colors"
-                >
-                  {" "}
-                  Hesap Oluştur{" "}
-                </Link>{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
-      </section>{" "}
+      {/* 5. Photo Reviews Slider */}
+      {photoReviews && photoReviews.length > 0 && (
+        <PhotoReviewsSlider reviews={photoReviews} />
+      )}{" "}
       {/* 6. Shop by Brands */}{" "}
       <section className="w-full py-16 border-y border-border bg-muted">
         {" "}

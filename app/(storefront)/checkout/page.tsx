@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock, CheckCircle2, Building, Info, MapPin, Plus, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { incrementCouponUsage } from "@/app/actions/coupon";
+import { PageHero } from "@/components/storefront/page-hero";
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -17,19 +18,19 @@ export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const [user, setUser] = useState<any>(null);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
-  
+
   // Billing specific states
   const [useSameAddressForBilling, setUseSameAddressForBilling] = useState(true);
   const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string>("");
   const [isAddingBillingAddress, setIsAddingBillingAddress] = useState(false);
-  
+
   const [generatedPassword, setGeneratedPassword] = useState("");
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -50,19 +51,19 @@ export default function CheckoutPage() {
     phone: "",
     title: "Fatura Adresim",
   });
-  
+
   const [bankInfo, setBankInfo] = useState({ bankName: "", iban: "" });
 
   useEffect(() => {
     setMounted(true);
-    
+
     async function fetchData() {
       const { data: settingsData } = await supabase
         .from("settings")
         .select("value")
         .eq("key", "bank_info")
         .single();
-        
+
       if (settingsData?.value) {
         setBankInfo(settingsData.value);
       }
@@ -71,7 +72,7 @@ export default function CheckoutPage() {
       if (currentUser) {
         setUser(currentUser);
         setFormData(prev => ({ ...prev, email: currentUser.email || "" }));
-        
+
         const { data: addrData } = await supabase
           .from("addresses")
           .select("*")
@@ -91,7 +92,7 @@ export default function CheckoutPage() {
         setIsAddingBillingAddress(true);
       }
     }
-    
+
     fetchData();
   }, [supabase]);
 
@@ -105,7 +106,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     let finalUserId = user?.id;
 
     // 1. Auto-registration
@@ -120,11 +121,11 @@ export default function CheckoutPage() {
           }
         }
       });
-      
+
       if (signUpError && signUpError.status !== 400) {
         console.error("Signup error:", signUpError);
       }
-      
+
       if (signUpData?.user) {
         finalUserId = signUpData.user.id;
         setGeneratedPassword(randomPassword);
@@ -143,7 +144,7 @@ export default function CheckoutPage() {
           zip_code: formData.zip,
           phone: formData.phone || "000"
         }).select().single();
-        
+
         if (!addrError && newAddr) {
           setSelectedAddressId(newAddr.id);
         }
@@ -164,7 +165,7 @@ export default function CheckoutPage() {
           zip_code: billingFormData.zip,
           phone: billingFormData.phone || "000"
         }).select().single();
-        
+
         if (!billAddrError && newBillAddr) {
           setSelectedBillingAddressId(newBillAddr.id);
         }
@@ -175,8 +176,8 @@ export default function CheckoutPage() {
 
     // 4. Create Order Records
     const selectedAddress = addresses.find(a => a.id === selectedAddressId);
-    const shippingString = user && !isAddingNewAddress 
-      ? formatAddressString(selectedAddress) 
+    const shippingString = user && !isAddingNewAddress
+      ? formatAddressString(selectedAddress)
       : `${formData.title} - ${formData.firstName} ${formData.lastName} - ${formData.address}, ${formData.city} ${formData.zip} - Tel: ${formData.phone}`;
 
     let billingString = shippingString;
@@ -194,7 +195,7 @@ export default function CheckoutPage() {
       finalCustomerName = selectedAddress.full_name;
       finalCustomerPhone = selectedAddress.phone;
     }
-    
+
     // Fallback if name is still empty
     if (!finalCustomerName) {
       finalCustomerName = user?.user_metadata?.full_name || user?.email || "Müşteri";
@@ -228,24 +229,24 @@ export default function CheckoutPage() {
         unit_price: item.product.price
       }));
       const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
-      
+
       if (itemsError) {
         console.error("Order items creation failed:", itemsError);
       }
-      
-      
+
+
       // Trigger email sending asynchronously (don't await so it doesn't block UI)
       fetch("/api/emails/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
       }).catch(err => console.error("Email API call failed:", err));
-      
+
       // Increment coupon usage
       if (couponCode) {
         incrementCouponUsage(couponCode).catch(console.error);
       }
-      
+
       // 5. Success
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -270,7 +271,7 @@ export default function CheckoutPage() {
           <p className="text-muted-foreground font-medium mb-6">
             Siparişiniz başarıyla alındı. Ödemenizi lütfen aşağıdaki Havale/EFT bilgileri ile gerçekleştirin. Ödeme onaylandıktan sonra siparişiniz hazırlanmaya başlanacaktır.
           </p>
-          
+
           {generatedPassword && (
             <div className="mb-8 p-4 bg-primary/10 rounded-xl border border-primary/20 text-left">
               <h3 className="font-bold text-primary mb-2 flex items-center gap-2">
@@ -308,7 +309,7 @@ export default function CheckoutPage() {
           <Label className="text-muted-foreground font-semibold text-sm">Ad</Label>
           <Input
             value={data.firstName}
-            onChange={(e) => setData({...data, firstName: e.target.value})}
+            onChange={(e) => setData({ ...data, firstName: e.target.value })}
             required={required}
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
           />
@@ -317,19 +318,19 @@ export default function CheckoutPage() {
           <Label className="text-muted-foreground font-semibold text-sm">Soyad</Label>
           <Input
             value={data.lastName}
-            onChange={(e) => setData({...data, lastName: e.target.value})}
+            onChange={(e) => setData({ ...data, lastName: e.target.value })}
             required={required}
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
           />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-muted-foreground font-semibold text-sm">Telefon</Label>
           <Input
             value={data.phone}
-            onChange={(e) => setData({...data, phone: e.target.value})}
+            onChange={(e) => setData({ ...data, phone: e.target.value })}
             required={required}
             placeholder="05..."
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
@@ -339,7 +340,7 @@ export default function CheckoutPage() {
           <Label className="text-muted-foreground font-semibold text-sm">Adres Başlığı</Label>
           <Input
             value={data.title}
-            onChange={(e) => setData({...data, title: e.target.value})}
+            onChange={(e) => setData({ ...data, title: e.target.value })}
             required={required}
             placeholder="Ev, İş vb."
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
@@ -351,19 +352,19 @@ export default function CheckoutPage() {
         <Label className="text-muted-foreground font-semibold text-sm">Adres</Label>
         <Input
           value={data.address}
-          onChange={(e) => setData({...data, address: e.target.value})}
+          onChange={(e) => setData({ ...data, address: e.target.value })}
           required={required}
           placeholder="Mahalle, sokak, bina no..."
           className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
         />
       </div>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-muted-foreground font-semibold text-sm">İl / İlçe</Label>
           <Input
             value={data.city}
-            onChange={(e) => setData({...data, city: e.target.value})}
+            onChange={(e) => setData({ ...data, city: e.target.value })}
             required={required}
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
           />
@@ -372,7 +373,7 @@ export default function CheckoutPage() {
           <Label className="text-muted-foreground font-semibold text-sm">Posta Kodu</Label>
           <Input
             value={data.zip}
-            onChange={(e) => setData({...data, zip: e.target.value})}
+            onChange={(e) => setData({ ...data, zip: e.target.value })}
             required={required}
             className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
           />
@@ -382,39 +383,27 @@ export default function CheckoutPage() {
   );
 
   return (
-    <div className="w-full bg-muted font-sans min-h-screen py-10 md:py-20">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <Link
-          href="/products"
-          className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-primary transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Alışverişe Devam Et
-        </Link>
-        
+    <div className="w-full bg-background font-sans min-h-screen">
+      <PageHero
+        title="Güvenli Ödeme"
+        description="Siparişinizi tamamlamak için bilgilerinizi girin."
+        breadcrumbs={[
+          { label: "Ödeme" }
+        ]}
+      />
+
+      <div className="container mx-auto px-4 max-w-6xl -mt-8 mb-20 relative z-20">
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Checkout Form */}
           <div className="lg:col-span-7 bg-background border border-border rounded-[32px] p-6 sm:p-10 shadow-sm">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <Lock className="w-5 h-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black text-foreground tracking-tight">
-                  Güvenli Ödeme
-                </h1>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Sipariş bilgilerinizi tamamlayın.
-                </p>
-              </div>
-            </div>
-            
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* İletişim */}
               <div className="space-y-4">
                 <h2 className="text-lg font-bold text-foreground">
                   İletişim Bilgileri
                 </h2>
-                
+
                 {user ? (
                   <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-center justify-between">
                     <div>
@@ -434,7 +423,7 @@ export default function CheckoutPage() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="ornek@email.com"
                       required
                       className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
@@ -443,13 +432,13 @@ export default function CheckoutPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* Teslimat */}
               <div className="space-y-4 pt-4 border-t border-border">
                 <h2 className="text-lg font-bold text-foreground">
                   Teslimat Adresi
                 </h2>
-                
+
                 {user && !isAddingNewAddress ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -457,11 +446,10 @@ export default function CheckoutPage() {
                         <div
                           key={address.id}
                           onClick={() => setSelectedAddressId(address.id)}
-                          className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${
-                            selectedAddressId === address.id 
-                            ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                          className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${selectedAddressId === address.id
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary'
                             : 'border-border bg-background hover:border-primary/50'
-                          }`}
+                            }`}
                         >
                           {selectedAddressId === address.id && (
                             <div className="absolute top-4 right-4 text-primary">
@@ -480,7 +468,7 @@ export default function CheckoutPage() {
                         </div>
                       ))}
                     </div>
-                    <Button 
+                    <Button
                       type="button"
                       variant="outline"
                       className="w-full rounded-xl border-dashed h-12"
@@ -493,9 +481,9 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     {renderAddressForm(formData, setFormData, isAddingNewAddress)}
                     {user && addresses.length > 0 && (
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
+                      <Button
+                        type="button"
+                        variant="ghost"
                         className="w-full h-12 text-muted-foreground"
                         onClick={() => setIsAddingNewAddress(false)}
                       >
@@ -504,13 +492,13 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 )}
-                
+
                 {/* Billing Address Switch */}
                 <div className="pt-2">
                   <label className="flex items-center space-x-3 cursor-pointer group p-3 bg-muted/30 rounded-xl border border-transparent hover:border-border transition-colors">
                     <div className="relative flex items-center justify-center">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={useSameAddressForBilling}
                         onChange={(e) => setUseSameAddressForBilling(e.target.checked)}
                         className="peer appearance-none w-5 h-5 border-2 border-muted-foreground rounded checked:border-primary checked:bg-primary transition-all cursor-pointer"
@@ -528,7 +516,7 @@ export default function CheckoutPage() {
                   <h2 className="text-lg font-bold text-foreground">
                     Fatura Adresi
                   </h2>
-                  
+
                   {user && !isAddingBillingAddress ? (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -536,11 +524,10 @@ export default function CheckoutPage() {
                           <div
                             key={address.id}
                             onClick={() => setSelectedBillingAddressId(address.id)}
-                            className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${
-                              selectedBillingAddressId === address.id 
-                              ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                            className={`relative cursor-pointer border rounded-2xl p-5 transition-all ${selectedBillingAddressId === address.id
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary'
                               : 'border-border bg-background hover:border-primary/50'
-                            }`}
+                              }`}
                           >
                             {selectedBillingAddressId === address.id && (
                               <div className="absolute top-4 right-4 text-primary">
@@ -559,7 +546,7 @@ export default function CheckoutPage() {
                           </div>
                         ))}
                       </div>
-                      <Button 
+                      <Button
                         type="button"
                         variant="outline"
                         className="w-full rounded-xl border-dashed h-12"
@@ -572,9 +559,9 @@ export default function CheckoutPage() {
                     <div className="space-y-4">
                       {renderAddressForm(billingFormData, setBillingFormData, !useSameAddressForBilling && isAddingBillingAddress)}
                       {user && addresses.length > 0 && (
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
+                        <Button
+                          type="button"
+                          variant="ghost"
                           className="w-full h-12 text-muted-foreground"
                           onClick={() => setIsAddingBillingAddress(false)}
                         >
@@ -585,13 +572,13 @@ export default function CheckoutPage() {
                   )}
                 </div>
               )}
-              
+
               {/* Ödeme */}
               <div className="space-y-4 pt-4 border-t border-border">
                 <h2 className="text-lg font-bold text-foreground">
                   Banka Havalesi / EFT ile Ödeme
                 </h2>
-                
+
                 <div className="p-4 bg-muted/50 rounded-xl border border-border">
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -611,7 +598,7 @@ export default function CheckoutPage() {
                       <p className="font-bold text-foreground text-sm sm:text-base">{bankInfo.bankName || "Yücel Avize Ltd. Şti."}</p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-muted p-3 rounded-lg border border-border">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IBAN Numarası</p>
                     <p className="font-mono font-bold text-foreground sm:text-lg break-all">
@@ -620,7 +607,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
-              
+
               <Button
                 type="submit"
                 disabled={isSubmitting || cart.items.length === 0}
@@ -632,7 +619,7 @@ export default function CheckoutPage() {
               </Button>
             </form>
           </div>
-          
+
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-5">
             <div className="bg-background border border-border rounded-[32px] p-6 sm:p-10 sticky top-28 shadow-sm">
@@ -653,6 +640,7 @@ export default function CheckoutPage() {
                         }
                         alt={item.product.name}
                         fill
+                        sizes="64px"
                         className="object-cover"
                       />
                       <div className="absolute -top-2 -right-2 bg-foreground text-background text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
@@ -694,7 +682,7 @@ export default function CheckoutPage() {
                     Ücretsiz
                   </span>
                 </div>
-                
+
                 {cart.appliedCoupon && (
                   <div className="flex justify-between items-center text-success">
                     <span className="font-medium text-sm">İndirim ({cart.appliedCoupon.code})</span>

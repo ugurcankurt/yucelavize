@@ -89,7 +89,7 @@ export default async function AdminCampaigns() {
                   {campaign.discount_type === "percentage" ? `%${campaign.discount_amount}` : `₺${campaign.discount_amount}`}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={campaign.is_active ? "success" : "secondary"}>
+                  <Badge variant={campaign.is_active ? "default" : "secondary"} className={campaign.is_active ? "bg-green-500 hover:bg-green-600" : ""}>
                     {campaign.is_active ? "Aktif" : "Pasif"}
                   </Badge>
                 </TableCell>

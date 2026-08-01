@@ -92,7 +92,7 @@ export default async function AdminCoupons() {
                   {coupon.usage_count} / {coupon.max_usages || 'Sınırsız'}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={coupon.is_active ? "success" : "secondary"}>
+                  <Badge variant={coupon.is_active ? "default" : "secondary"} className={coupon.is_active ? "bg-green-500 hover:bg-green-600" : ""}>
                     {coupon.is_active ? "Aktif" : "Pasif"}
                   </Badge>
                 </TableCell>

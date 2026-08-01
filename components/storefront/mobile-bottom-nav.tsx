@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Home, ShoppingBag, Heart, MessageCircle, User, ChevronUp } from "lucide-react";
+import { Home, ShoppingBag, Heart, LayoutGrid, User, ChevronUp } from "lucide-react";
 import { useProductStore } from "@/hooks/use-product-store";
 import { AddToCartButton } from "./add-to-cart-button";
 import { ColorSelector } from "./color-selector";
@@ -18,7 +18,7 @@ export function MobileBottomNav() {
     { name: "Home", href: "/", icon: Home },
     { name: "Shop", href: "/products", icon: ShoppingBag },
     { name: "Favorites", href: "/account/favorites", icon: Heart },
-    { name: "Messages", href: "#", icon: MessageCircle }, // Placeholder for chat/messages
+    { name: "Koleksiyonlar", href: "/categories", icon: LayoutGrid }, 
     { name: "Profile", href: "/account", icon: User },
   ];
 

@@ -74,7 +74,7 @@ export default async function AdminOrders() {
                 <TableCell>
                   {order.coupon_code ? (
                     <div className="flex flex-col items-start gap-1">
-                      <Badge variant="success" className="uppercase">{order.coupon_code}</Badge>
+                      <Badge variant="default" className="uppercase bg-green-500 hover:bg-green-600">{order.coupon_code}</Badge>
                       <span className="text-[11px] text-muted-foreground">-₺{order.discount_total || 0}</span>
                     </div>
                   ) : (
@@ -82,7 +82,7 @@ export default async function AdminOrders() {
                   )}
                 </TableCell>
                 <TableCell>
-                  <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
+                  <OrderStatusSelect orderId={order.id} currentStatus={order.status as any} />
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

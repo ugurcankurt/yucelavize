@@ -102,7 +102,7 @@ export default async function AdminSlidesPage() {
                 </TableCell>
                 <TableCell>{slide.sort_order}</TableCell>
                 <TableCell>
-                  <Badge variant={slide.is_active ? "success" : "secondary"}>
+                  <Badge variant={slide.is_active ? "default" : "secondary"} className={slide.is_active ? "bg-green-500 hover:bg-green-600" : ""}>
                     {slide.is_active ? "Aktif" : "Pasif"}
                   </Badge>
                 </TableCell>

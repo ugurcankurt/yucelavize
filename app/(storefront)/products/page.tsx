@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductsFilter } from "@/components/storefront/products-filter";
+import { PageHero } from "@/components/storefront/page-hero";
 import { getUserFavorites } from "@/lib/services/user-service";
 
 export const metadata = {
@@ -84,35 +85,23 @@ export default async function ProductsPage({
   const pageDescription = categoryData
     ? `${categoryData.name} kategorisindeki özel koleksiyonumuzu keşfedin.`
     : "Evinizin ışıltısını ortaya çıkaracak premium aydınlatma koleksiyonumuzu keşfedin.";
+  const breadcrumbs = categoryData
+    ? [
+        { label: "Koleksiyonlar", href: "/categories" },
+        { label: categoryData.name },
+      ]
+    : resolvedSearchParams.search
+      ? [{ label: "Arama Sonuçları" }]
+      : [{ label: "Tüm Ürünler" }];
+
   return (
     <div className="w-full bg-background font-sans min-h-screen">
-      <div
-        className={`relative w-full -mt-[70px] pt-[130px] pb-16 md:-mt-[80px] md:pt-[160px] md:pb-24 flex items-center justify-center overflow-hidden ${categoryData?.image_url ? "" : "bg-gradient-to-br from-muted via-muted/50 to-background"}`}
-      >
-        {categoryData?.image_url && (
-          <>
-            <Image
-              src={categoryData.image_url}
-              alt={categoryData.name}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover absolute inset-0 z-0"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-transparent z-10"></div>
-          </>
-        )}
-        <div
-          className="container relative z-20 mx-auto px-6 flex flex-col items-center text-center"
-        >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 md:mb-4 text-primary drop-shadow-md">
-            {pageTitle}
-          </h1>
-          <p className="font-semibold text-sm md:text-base max-w-lg text-foreground/90 drop-shadow-md leading-relaxed">
-            {pageDescription}
-          </p>
-        </div>
-      </div>
+      <PageHero
+        title={pageTitle}
+        description={pageDescription}
+        imageUrl={categoryData?.image_url}
+        breadcrumbs={breadcrumbs}
+      />
       <div className="container mx-auto px-4 py-12">
         <ProductsFilter count={products?.length || 0} />
         {!products || products.length === 0 ? (

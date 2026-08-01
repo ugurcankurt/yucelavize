@@ -81,15 +81,21 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
       {/* Main Navbar (Desktop) */}
       <div className="hidden lg:block w-full border-b border-border bg-background">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-6">
-          {" "}
-          {/* Logo */}{" "}
-          <Link href="/" className="flex items-center flex-shrink-0">
-            {" "}
-            <span className="text-[22px] md:text-[26px] font-black tracking-tighter text-primary">
-              {" "}
-              yücel<span className="text-foreground">avize</span>{" "}
-            </span>{" "}
-          </Link>{" "}
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <span className="text-[22px] md:text-[26px] font-black tracking-tighter text-primary">
+                yücel<span className="text-foreground">avize</span>
+              </span>
+            </Link>
+            
+            {/* Nav Links */}
+            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
+              <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors">
+                Koleksiyonlar
+              </Link>
+            </nav>
+          </div>
           <SearchBar variant="desktop" />
           {/* Right Actions */}{" "}
           <div className="flex items-center gap-3 md:gap-5 lg:gap-7">

@@ -10,6 +10,7 @@ import { AvatarUpload } from "@/components/storefront/avatar-upload";
 import { AccountNav } from "@/components/storefront/account-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/storefront/page-hero";
 
 export default async function AccountLayout({
   children,
@@ -32,23 +33,14 @@ export default async function AccountLayout({
     .single();
     
   return (
-    <div className="w-full bg-muted/30 font-sans min-h-screen py-8 md:py-12">
-      <div className="container mx-auto px-4 max-w-7xl">
-        
-        {/* Header Section */}
-        <div className="hidden lg:flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
-              Hesabım
-            </h1>
-            <p className="text-muted-foreground font-medium mt-1 text-base">
-              Hoş geldiniz,{" "}
-              <span className="font-bold text-foreground">
-                {profile?.full_name || user.email?.split("@")[0]}
-              </span>
-            </p>
-          </div>
-        </div>
+    <div className="w-full bg-background font-sans min-h-screen">
+      <PageHero
+        title="Hesabım"
+        description={`Hoş geldiniz, ${profile?.full_name || user.email?.split("@")[0]}`}
+        breadcrumbs={[{ label: "Hesabım" }]}
+      />
+      
+      <div className="container mx-auto px-4 max-w-7xl -mt-8 mb-20 relative z-20">
         
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -84,7 +76,7 @@ export default async function AccountLayout({
                     />
                   </div>
                   
-                  <Badge variant="success" className="px-2 lg:px-3 py-0.5 lg:py-1 font-bold uppercase tracking-wider rounded-full shadow-sm z-10 text-[9px] lg:text-[10px] mt-1 lg:mt-0">
+                  <Badge variant="default" className="bg-green-500 hover:bg-green-600 px-2 lg:px-3 py-0.5 lg:py-1 font-bold uppercase tracking-wider rounded-full shadow-sm z-10 text-[9px] lg:text-[10px] mt-1 lg:mt-0">
                     Onaylı Hesap
                   </Badge>
                 </div>

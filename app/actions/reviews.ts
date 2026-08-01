@@ -63,3 +63,59 @@ export async function addReview(productId: string, rating: number, comment: stri
   
   return { success: true };
 }
+
+export async function getReviewsWithPhotos() {
+  const supabase = await createClient();
+  const { data: reviews, error } = await supabase
+    .from("reviews")
+    .select(`
+      id,
+      user_id,
+      rating,
+      comment,
+      user_name,
+      created_at,
+      images,
+      products (
+        name,
+        slug
+      )
+    `)
+    .eq("status", "approved")
+    .not("images", "eq", "{}")
+    .not("images", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  if (error || !reviews) {
+    console.error("Error fetching photo reviews:", error);
+    return [];
+  }
+
+  const filteredReviews = reviews.filter(r => r.images && r.images.length > 0);
+  
+  if (filteredReviews.length === 0) return [];
+
+  // Fetch profiles to get avatars
+  const userIds = [...new Set(filteredReviews.map(r => r.user_id).filter(Boolean))];
+  
+  let profileMap: Record<string, string> = {};
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, avatar_url")
+      .in("id", userIds);
+      
+    if (profiles) {
+      profileMap = profiles.reduce((acc, p) => {
+        if (p.avatar_url) acc[p.id] = p.avatar_url;
+        return acc;
+      }, {} as Record<string, string>);
+    }
+  }
+
+  return filteredReviews.map(r => ({
+    ...r,
+    user_avatar: r.user_id ? profileMap[r.user_id] || null : null
+  }));
+}
