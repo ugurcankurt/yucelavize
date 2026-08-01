@@ -10,6 +10,11 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { OrderStatusSelect } from "@/components/admin/order-status-select";
 import Link from "next/link";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, FileText } from "lucide-react";
 
 export default async function AdminOrders() {
   const supabase = await createClient();
@@ -20,10 +25,9 @@ export default async function AdminOrders() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Siparişler</h2>
-      </div>
-      <div className="rounded-md border bg-white dark:bg-black">
+      <AdminPageHeader title="Siparişler" />
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -69,8 +73,8 @@ export default async function AdminOrders() {
                 <TableCell className="font-bold">₺{order.total_amount}</TableCell>
                 <TableCell>
                   {order.coupon_code ? (
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-success uppercase">{order.coupon_code}</span>
+                    <div className="flex flex-col items-start gap-1">
+                      <Badge variant="success" className="uppercase">{order.coupon_code}</Badge>
                       <span className="text-[11px] text-muted-foreground">-₺{order.discount_total || 0}</span>
                     </div>
                   ) : (
@@ -81,17 +85,23 @@ export default async function AdminOrders() {
                   <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/admin/orders/${order.id}`}>
-                    <Button variant="outline" size="sm">
-                      Detay
-                    </Button>
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem render={<Link href={`/admin/orders/${order.id}`} className="cursor-pointer flex items-center" />}>
+                        <FileText className="w-4 h-4 mr-2" /> Detayı Görüntüle
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

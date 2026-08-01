@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { AdminFormLayout } from "@/components/admin/admin-form-layout";
+import { Button } from "@/components/ui/button";
 
 export default function NewCampaignPage() {
   async function createCampaign(formData: FormData) {
@@ -30,15 +29,8 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" nativeButton={false} render={<Link href="/admin/campaigns" />}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-2xl font-bold tracking-tight">Yeni Kampanya</h2>
-      </div>
-
-      <form action={createCampaign} className="space-y-6 bg-white dark:bg-black p-6 rounded-lg border">
+    <AdminFormLayout title="Yeni Kampanya" backHref="/admin/campaigns">
+      <form action={createCampaign} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Kampanya Adı</Label>
           <Input id="name" name="name" required placeholder="Örn: Yaz İndirimi" />
@@ -78,6 +70,6 @@ export default function NewCampaignPage() {
           Kampanya Oluştur
         </Button>
       </form>
-    </div>
+    </AdminFormLayout>
   );
 }

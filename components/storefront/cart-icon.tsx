@@ -129,11 +129,13 @@ function RemoveItemDialog({
               Vazgeç
             </Button>
           } onClick={() => onOpenChange(false)} />
-          <AlertDialogAction render={
-            <Button variant="destructive" className="flex-1 h-12 rounded-full font-bold text-base mt-0" onClick={() => { onRemove(); onOpenChange(false); }}>
-              Evet, Sil
-            </Button>
-          } />
+          <AlertDialogAction 
+            variant="destructive" 
+            className="flex-1 h-12 rounded-full font-bold text-base mt-0" 
+            onClick={() => { onRemove(); onOpenChange(false); }}
+          >
+            Evet, Sil
+          </AlertDialogAction>
         </AlertDialogFooter>{" "}
       </AlertDialogContent>{" "}
     </AlertDialog>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -6,8 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, ShoppingBag } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 
 export default async function AdminCustomers() {
   const supabase = await createClient();
@@ -48,10 +54,9 @@ export default async function AdminCustomers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Müşteriler</h2>
-      </div>
-      <div className="rounded-md border bg-white dark:bg-black">
+      <AdminPageHeader title="Müşteriler" />
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -83,9 +88,18 @@ export default async function AdminCustomers() {
                 </TableCell>
               </TableRow>
             )}
-            {uniqueCustomers.map((customer, i) => (
+            {uniqueCustomers.map((customer, i) => {
+              const initials = customer.name?.substring(0, 2).toUpperCase() || "MÜ";
+              return (
               <TableRow key={i}>
-                <TableCell className="font-medium">{customer.name}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 border border-border">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{customer.name}</span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="text-sm">{customer.email}</div>
                   <div className="text-xs text-muted-foreground">
@@ -97,15 +111,24 @@ export default async function AdminCustomers() {
                   {new Date(customer.last_order).toLocaleDateString("tr-TR")}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="outline" size="sm">
-                    Siparişleri Gör
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="cursor-pointer flex items-center">
+                        <ShoppingBag className="w-4 h-4 mr-2" /> Siparişleri Gör
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

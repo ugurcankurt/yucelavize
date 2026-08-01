@@ -9,51 +9,51 @@ import { useProductStore } from "@/hooks/use-product-store";
 
 interface ProductActionSectionProps {
   product: ProductType;
-  colors?: string[];
+  variations?: string[];
 }
 
 export function ProductActionSection({
   product,
-  colors,
+  variations,
 }: ProductActionSectionProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { setProductContext, clearProductContext } = useProductStore();
 
-  // Read color from URL if exists, else null
-  const urlColor = searchParams.get("color");
-  const [selectedColor, setSelectedColor] = useState<string | null>(
-    urlColor || null,
+  // Read variation from URL if exists, else null
+  const urlVariation = searchParams.get("variation") || searchParams.get("color");
+  const [selectedVariation, setSelectedVariation] = useState<string | null>(
+    urlVariation || null,
   );
-  const hasColors = colors && colors.length > 0;
+  const hasVariations = variations && variations.length > 0;
 
   useEffect(() => {
-    setProductContext(product, colors);
+    setProductContext(product, variations);
     return () => clearProductContext();
-  }, [product, colors, setProductContext, clearProductContext]);
+  }, [product, variations, setProductContext, clearProductContext]);
 
-  // Sync state when user clicks a color
-  const handleSelectColor = (color: string) => {
-    setSelectedColor(color);
+  // Sync state when user clicks a variation
+  const handleSelectVariation = (variation: string) => {
+    setSelectedVariation(variation);
     // Update URL without server roundtrip (Next.js supports this natively)
     const params = new URLSearchParams(searchParams.toString());
-    params.set("color", color);
+    params.set("variation", variation);
     window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
     
-    // Scroll up to the top to see the color change
+    // Scroll up to the top to see the variation change
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    if (hasColors && !selectedColor) {
+    if (hasVariations && !selectedVariation) {
       e.preventDefault();
       // Stop add to cart
       toast.add({
-        title: "Renk Seçimi Zorunlu",
-        description: "Lütfen sepete eklemeden önce bir renk seçiniz.",
+        title: "Varyasyon Seçimi Zorunlu",
+        description: "Lütfen sepete eklemeden önce bir seçenek seçiniz.",
         type: "error",
       } as any);
       return false;
@@ -63,18 +63,18 @@ export function ProductActionSection({
 
   return (
     <div className="hidden lg:flex flex-col gap-4 mb-8 bg-muted p-6 rounded-2xl border border-border">
-      {hasColors && (
+      {hasVariations && (
         <ColorSelector
-          colors={colors}
-          selectedColor={selectedColor}
-          onSelectColor={handleSelectColor}
+          colors={variations}
+          selectedColor={selectedVariation}
+          onSelectColor={handleSelectVariation}
         />
       )}
       <div onClickCapture={handleAddToCart}>
         <AddToCartButton
           product={product}
-          selectedColor={selectedColor || undefined}
-          disabled={hasColors && !selectedColor}
+          selectedColor={selectedVariation || undefined}
+          disabled={hasVariations && !selectedVariation}
         />
       </div>
     </div>

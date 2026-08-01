@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -7,11 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Trash2, Search, PackageOpen } from "lucide-react";
-import Link from "next/link";
+import { Edit, Trash2, Search, PackageOpen, MoreHorizontal } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default async function AdminProducts({
   searchParams,
@@ -45,11 +49,10 @@ export default async function AdminProducts({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground dark:text-zinc-100">
-          Ürün Yönetimi
-        </h2>
-
+      <AdminPageHeader 
+        title="Ürün Yönetimi" 
+        action={{ href: "/admin/products/new", label: "Yeni Ürün Ekle" }} 
+      >
         <div className="flex w-full sm:w-auto items-center gap-3">
           <form className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -61,23 +64,16 @@ export default async function AdminProducts({
               className="w-full pl-9 pr-4 py-2 bg-white dark:bg-foreground border border-border dark:border-border rounded-md text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </form>
-
-          <Button
-            nativeButton={false}
-            render={<Link href="/admin/products/new" />}
-            className="whitespace-nowrap shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Yeni Ekle
-          </Button>
         </div>
-      </div>
+      </AdminPageHeader>
 
-      <div className="rounded-lg border border-border dark:border-border bg-white dark:bg-foreground shadow-sm overflow-hidden">
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader className="bg-muted/50 dark:bg-foreground/50">
             <TableRow>
               <TableHead className="w-[80px]">Görsel</TableHead>
-              <TableHead>Ürün Adı & Renkler</TableHead>
+              <TableHead>Ürün Adı & Varyasyonlar</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Fiyat</TableHead>
               <TableHead>Stok</TableHead>
@@ -118,7 +114,7 @@ export default async function AdminProducts({
             )}
 
             {products?.map((product) => {
-              const colors = product.features?.colors || [];
+              const variations = product.features?.variations || product.features?.colors || [];
               const mainImage = product.images?.[0] || "/placeholder.jpg"; // Varsayılan görsel eklenebilir
 
               return (
@@ -147,14 +143,14 @@ export default async function AdminProducts({
                     <div className="font-medium text-foreground dark:text-zinc-100">
                       {product.name}
                     </div>
-                    {colors.length > 0 && (
+                    {variations.length > 0 && (
                       <div className="flex items-center gap-1 mt-1">
-                        {colors.map((c: string) => (
+                        {variations.map((v: string) => (
                           <span
-                            key={c}
+                            key={v}
                             className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted dark:bg-foreground/90 text-muted-foreground dark:text-muted-foreground border border-border dark:border-border"
                           >
-                            {c}
+                            {v}
                           </span>
                         ))}
                       </div>
@@ -167,42 +163,38 @@ export default async function AdminProducts({
                     ₺{product.price.toLocaleString("tr-TR")}
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${product.stock > 10 ? "bg-success/20 text-success dark:bg-success/20 dark:text-success" : product.stock > 0 ? "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning" : "bg-destructive/20 text-destructive dark:bg-destructive/20 dark:text-destructive"}`}
-                    >
+                    <Badge variant={product.stock > 10 ? "success" : product.stock > 0 ? "warning" : "destructive"}>
                       {product.stock} adet
-                    </span>
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        nativeButton={false}
-                        render={<Link href={`/admin/products/${product.id}`} />}
-                        className="h-8 shadow-sm"
-                      >
-                        <Edit className="w-3.5 h-3.5 mr-1.5" /> Düzenle
-                      </Button>
-                      <form action={deleteProduct}>
-                        <input type="hidden" name="id" value={product.id} />
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          type="submit"
-                          className="h-8 shadow-sm"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Sil
-                        </Button>
-                      </form>
-                    </div>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem render={<Link href={`/admin/products/${product.id}`} className="cursor-pointer flex items-center" />}>
+                        <Edit className="w-4 h-4 mr-2" /> Düzenle
+                      </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <form action={deleteProduct}>
+                          <input type="hidden" name="id" value={product.id} />
+                          <button type="submit" className="w-full">
+                            <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer">
+                              <Trash2 className="w-4 h-4 mr-2" /> Sil
+                            </DropdownMenuItem>
+                          </button>
+                        </form>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

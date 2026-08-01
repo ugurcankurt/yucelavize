@@ -6,12 +6,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Home, ShoppingBag, Heart, MessageCircle, User, ChevronUp } from "lucide-react";
 import { useProductStore } from "@/hooks/use-product-store";
 import { AddToCartButton } from "./add-to-cart-button";
-import { ColorSelector, COLOR_MAP } from "./color-selector";
+import { ColorSelector } from "./color-selector";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { product, colors } = useProductStore();
+  const { product, variations } = useProductStore();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const navItems = [
@@ -29,15 +29,15 @@ export function MobileBottomNav() {
 
   const isProductPage = pathname.match(/^\/products\/[^/]+$/);
 
-  const hasColors = colors && colors.length > 0;
-  const selectedColor = searchParams.get("color") || null;
+  const hasVariations = variations && variations.length > 0;
+  const selectedVariation = searchParams.get("variation") || searchParams.get("color") || null;
   
-  const handleSelectColor = (color: string) => {
+  const handleSelectVariation = (variation: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("color", color);
+      params.set("variation", variation);
       window.history.replaceState(null, "", `${pathname}?${params.toString()}`);
       
-      // Scroll to top to see the color change in the gallery
+      // Scroll to top to see the variation change in the gallery
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }, 50);
@@ -99,47 +99,49 @@ export function MobileBottomNav() {
                   <span className="text-base font-extrabold text-white tracking-tight leading-none">₺{product.price.toLocaleString("tr-TR")}</span>
                 </div>
                 
-                {/* Middle: Colors */}
+                {/* Middle: Variations */}
                 <div className="flex-1 flex flex-col items-center justify-center px-1 overflow-hidden">
-                  {hasColors && !selectedColor ? (
+                  {hasVariations && !selectedVariation ? (
                     <div className="flex flex-col items-center">
-                      <span className="text-[9px] font-medium text-zinc-500 mb-1">Renk Seçin</span>
+                      <span className="text-[9px] font-medium text-zinc-500 mb-1">Seçenek Belirleyin</span>
                       <div className="flex items-center -space-x-1">
-                        {colors.slice(0, 4).map((c, i) => (
+                        {variations.slice(0, 3).map((v, i) => (
                           <div 
                             key={i} 
-                            className={`w-4 h-4 rounded-full border border-zinc-900 shadow-sm ${COLOR_MAP[c] || "bg-muted"}`} 
-                          />
+                            className={`px-1.5 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-[8px] text-zinc-300 shadow-sm truncate max-w-[40px]`} 
+                          >
+                            {v}
+                          </div>
                         ))}
-                        {colors.length > 4 && (
-                          <span className="text-[9px] font-medium text-zinc-500 pl-1.5">+{colors.length - 4}</span>
+                        {variations.length > 3 && (
+                          <span className="text-[9px] font-medium text-zinc-500 pl-1.5">+{variations.length - 3}</span>
                         )}
                       </div>
                     </div>
                   ) : (
                     <span className="text-[11px] font-medium text-zinc-400 leading-tight text-center px-1 truncate max-w-full">
-                      {selectedColor ? `Renk: ${selectedColor}` : ""}
+                      {selectedVariation ? `Seçim: ${selectedVariation}` : ""}
                     </span>
                   )}
                 </div>
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2 pr-1">
-                  {hasColors && !selectedColor && (
+                  {hasVariations && !selectedVariation && (
                     <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center shadow-inner">
                       <ChevronUp className="w-4 h-4 text-zinc-400" />
                     </div>
                   )}
                   <div onClick={(e) => {
-                    if (hasColors && !selectedColor) {
+                    if (hasVariations && !selectedVariation) {
                       e.stopPropagation();
                       setIsExpanded(true);
                     }
                   }}>
                     <AddToCartButton 
                       product={product}
-                      selectedColor={selectedColor || undefined}
-                      disabled={Boolean(hasColors && !selectedColor)}
+                      selectedColor={selectedVariation || undefined}
+                      disabled={Boolean(hasVariations && !selectedVariation)}
                       iconOnly={true}
                       className="w-12 h-12 shadow-md"
                       onAdded={() => setIsExpanded(false)}
@@ -167,12 +169,12 @@ export function MobileBottomNav() {
                 </div>
               </div>
               
-              {hasColors && (
+              {hasVariations && (
                 <div className="px-1 -mt-1 scale-[0.95] origin-left [&_h3]:text-zinc-200">
                   <ColorSelector
-                    colors={colors}
-                    selectedColor={selectedColor}
-                    onSelectColor={handleSelectColor}
+                    colors={variations}
+                    selectedColor={selectedVariation}
+                    onSelectColor={handleSelectVariation}
                   />
                 </div>
               )}
@@ -180,8 +182,8 @@ export function MobileBottomNav() {
               <div className="w-full mt-1">
                 <AddToCartButton 
                   product={product}
-                  selectedColor={selectedColor || undefined}
-                  disabled={Boolean(hasColors && !selectedColor)}
+                  selectedColor={selectedVariation || undefined}
+                  disabled={Boolean(hasVariations && !selectedVariation)}
                   onAdded={() => setIsExpanded(false)}
                 />
               </div>

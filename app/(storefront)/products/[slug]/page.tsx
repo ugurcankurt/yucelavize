@@ -7,6 +7,9 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductDimensions } from "@/components/storefront/product-dimensions";
 import { ProductActionSection } from "@/components/storefront/product-action-section";
+import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
+import { FavoriteButton } from "@/components/storefront/favorite-button";
+import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductReviews } from "@/components/storefront/product-reviews";
 // Dynamic Metadata generation for SEO 2026 guidelines
@@ -56,16 +59,7 @@ export default async function ProductDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let userFavorites: string[] = [];
-  if (user) {
-    const { data: favs } = await supabase
-      .from("favorites")
-      .select("product_id")
-      .eq("user_id", user.id);
-    if (favs) {
-      userFavorites = favs.map((f) => f.product_id);
-    }
-  }
+  const userFavorites = await getUserFavorites(supabase, user?.id);
   const isFavorite = userFavorites.includes(product.id);
 
   // Fetch Reviews
@@ -328,7 +322,7 @@ export default async function ProductDetailPage({
                   price: finalPrice,
                   images: images,
                 }}
-                colors={product.features?.colors}
+                variations={product.features?.variations || product.features?.colors}
               />
 
               <div className="w-full mt-4 mb-6">

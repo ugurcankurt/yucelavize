@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -7,10 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Edit, Trash2, MoreHorizontal } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default async function AdminCategories() {
   const supabase = await createClient();
@@ -31,16 +34,12 @@ export default async function AdminCategories() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Kategoriler</h2>
-        <Button
-          nativeButton={false}
-          render={<Link href="/admin/categories/new" />}
-        >
-          <Plus className="mr-2 h-4 w-4" /> Yeni Kategori Ekle
-        </Button>
-      </div>
-      <div className="rounded-md border bg-white dark:bg-black overflow-hidden">
+      <AdminPageHeader 
+        title="Kategoriler" 
+        action={{ href: "/admin/categories/new", label: "Yeni Kategori Ekle" }} 
+      />
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -91,30 +90,32 @@ export default async function AdminCategories() {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      nativeButton={false}
-                      render={
-                        <Link href={`/admin/categories/${category.id}`} />
-                      }
-                    >
-                      <Edit className="w-4 h-4 mr-1" /> Düzenle
-                    </Button>
-                    <form action={deleteCategory}>
-                      <input type="hidden" name="id" value={category.id} />
-                      <Button variant="destructive" size="sm" type="submit">
-                        <Trash2 className="w-4 h-4 mr-1" /> Sil
-                      </Button>
-                    </form>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem render={<Link href={`/admin/categories/${category.id}`} className="cursor-pointer flex items-center" />}>
+                        <Edit className="w-4 h-4 mr-2" /> Düzenle
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <form action={deleteCategory}>
+                        <input type="hidden" name="id" value={category.id} />
+                        <button type="submit" className="w-full">
+                          <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer flex items-center">
+                            <Trash2 className="w-4 h-4 mr-2" /> Sil
+                          </DropdownMenuItem>
+                        </button>
+                      </form>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

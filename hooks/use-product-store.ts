@@ -3,14 +3,14 @@ import { ProductType } from "./use-cart";
 
 interface ProductStore {
   product: ProductType | null;
-  colors: string[] | null;
-  setProductContext: (product: ProductType, colors?: string[]) => void;
+  variations: string[] | null;
+  setProductContext: (product: ProductType, variations?: string[]) => void;
   clearProductContext: () => void;
 }
 
 export const useProductStore = create<ProductStore>((set) => ({
   product: null,
-  colors: null,
-  setProductContext: (product, colors) => set({ product, colors }),
-  clearProductContext: () => set({ product: null, colors: null }),
+  variations: null,
+  setProductContext: (product, variations) => set({ product, variations }),
+  clearProductContext: () => set({ product: null, variations: null }),
 }));

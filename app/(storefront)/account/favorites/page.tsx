@@ -30,6 +30,14 @@ export default async function FavoritesPage() {
     console.error("Favorites table not ready:", error);
   }
 
+  // Fetch Active Campaign
+  const { data: activeCampaign } = await supabase
+    .from("campaigns")
+    .select("*")
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+
   // Remove Action
   async function removeFavorite(formData: FormData) {
     "use server";
@@ -90,6 +98,7 @@ export default async function FavoritesPage() {
                 key={fav.id}
                 product={product}
                 isFavorite={true}
+                activeCampaign={activeCampaign}
               />
             );
           })}

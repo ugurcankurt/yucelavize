@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Lock } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
 export default function CustomerLoginPage() {
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
@@ -24,24 +24,10 @@ export default function CustomerLoginPage() {
     }
   }
   return (
-    <div className="w-full bg-muted font-sans min-h-[80vh] flex items-center justify-center py-12 px-4">
-      {" "}
-      <div className="w-full max-w-md bg-background border border-border rounded-[32px] p-8 sm:p-10 shadow-xl shadow-gray-100/50">
-        {" "}
-        <div className="flex flex-col items-center text-center space-y-4 mb-8">
-          {" "}
-          <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
-            {" "}
-            <Lock className="w-6 h-6" />{" "}
-          </div>{" "}
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
-            Giriş Yap
-          </h1>{" "}
-          <p className="text-sm font-medium text-muted-foreground">
-            {" "}
-            Siparişlerinizi takip etmek için hesabınıza erişin.{" "}
-          </p>{" "}
-        </div>{" "}
+    <AuthLayout
+      title="Giriş Yap"
+      subtitle="Siparişlerinizi takip etmek için hesabınıza erişin."
+    >
         {registered && (
           <div className="mb-6 p-4 text-sm font-medium text-success bg-success/10 border border-success/30 rounded-xl flex items-center gap-3">
             {" "}
@@ -110,7 +96,7 @@ export default function CustomerLoginPage() {
                 Şifre
               </Label>{" "}
               <Link
-                href="#"
+                href="/auth/forgot-password"
                 className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
               >
                 Şifremi Unuttum
@@ -141,10 +127,9 @@ export default function CustomerLoginPage() {
             className="font-bold text-foreground hover:text-primary transition-colors"
           >
             {" "}
-            Hemen Kayıt Olun{" "}
-          </Link>{" "}
-        </div>{" "}
-      </div>{" "}
-    </div>
+             Kayıt Ol
+          </Link>
+        </div>
+    </AuthLayout>
   );
 }

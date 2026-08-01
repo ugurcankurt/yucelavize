@@ -47,6 +47,37 @@ export default async function UserProfilePage(props: { params: Promise<{ id: str
 
   const purchasedProducts = purchasedData || [];
 
+  // Fetch Active Campaign
+  const { data: activeCampaign } = await supabase
+    .from("campaigns")
+    .select("*")
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+
+  // Fetch Reviews for all displayed products
+  const allProductIds = Array.from(new Set([
+    ...favoriteProducts.map((p: any) => p.id),
+    ...purchasedProducts.map((p: any) => p.id)
+  ]));
+
+  if (allProductIds.length > 0) {
+    const { data: allReviews } = await supabase
+      .from("reviews")
+      .select("product_id, rating, status")
+      .eq("status", "approved")
+      .in("product_id", allProductIds);
+
+    const reviews = allReviews || [];
+    
+    favoriteProducts.forEach((p: any) => {
+      p.reviews = reviews.filter((r) => r.product_id === p.id);
+    });
+    purchasedProducts.forEach((p: any) => {
+      p.reviews = reviews.filter((r) => r.product_id === p.id);
+    });
+  }
+
   const safeReviews = reviews || [];
 
   const getPublicName = (fullName: string | null) => {
@@ -129,7 +160,7 @@ export default async function UserProfilePage(props: { params: Promise<{ id: str
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {purchasedProducts.map((product: any) => (
-              <ProductCard key={product.id} product={product} isFavorite={false} />
+              <ProductCard key={product.id} product={product} isFavorite={false} activeCampaign={activeCampaign} />
             ))}
           </div>
         )}
@@ -146,7 +177,7 @@ export default async function UserProfilePage(props: { params: Promise<{ id: str
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {favoriteProducts.map((product: any) => (
-              <ProductCard key={product.id} product={product} isFavorite={false} />
+              <ProductCard key={product.id} product={product} isFavorite={false} activeCampaign={activeCampaign} />
             ))}
           </div>
         )}

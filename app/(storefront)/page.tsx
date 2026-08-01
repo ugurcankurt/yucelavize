@@ -11,7 +11,12 @@ import {
   Sun,
   Box,
   LayoutGrid,
+  ChevronRight,
+  ShieldCheck,
+  Truck,
+  RefreshCw,
 } from "lucide-react";
+import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { HeroSlider } from "@/components/storefront/hero-slider";
 
@@ -43,19 +48,20 @@ export default async function Home() {
     .limit(1)
     .maybeSingle();
 
+  // Fetch active home banners
+  const { data: banners } = await supabase
+    .from("home_banners")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  const largeBanner = banners?.find(b => b.is_large);
+  const smallBanners = banners?.filter(b => !b.is_large).slice(0, 2);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let userFavorites: string[] = [];
-  if (user) {
-    const { data: favs } = await supabase
-      .from("favorites")
-      .select("product_id")
-      .eq("user_id", user.id);
-    if (favs) {
-      userFavorites = favs.map((f) => f.product_id);
-    }
-  }
+  const userFavorites = await getUserFavorites(supabase, user?.id);
   return (
     <div className="flex flex-col flex-1 w-full font-sans bg-background">
       {/* 1. Hero Section */}
@@ -64,7 +70,7 @@ export default async function Home() {
       {/* 2. Shop by Category */}
       <section className="w-full py-16">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
-          <div className="flex flex-col min-w-[200px]">
+          <div className="flex flex-col min-w-[200px] shrink-0">
             <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-2">
               Kategoriler
             </h2>
@@ -75,65 +81,48 @@ export default async function Home() {
               Tümünü Gör
             </Link>
           </div>
-          <div className="flex md:hidden overflow-x-auto pb-4 -mx-4 px-4 gap-3 snap-x scrollbar-hide">
-            <Link
-              href="/products"
-              className="snap-start flex-shrink-0 bg-foreground text-background px-5 py-2.5 rounded-full text-sm font-semibold shadow-sm"
-            >
-              Hepsi
-            </Link>
+          
+          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x scrollbar-hide md:grid md:grid-cols-4 md:overflow-visible md:pb-0 md:px-0 md:mx-0 md:flex-1">
             {categories?.map((cat) => (
               <Link
                 href={`/products?category=${cat.slug}`}
                 key={cat.id}
-                className="snap-start flex-shrink-0 bg-muted/50 border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap"
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </div>
-
-          <div className="hidden md:grid grid-cols-4 gap-4 flex-1">
-            {categories?.map((cat) => (
-              <Link
-                href={`/products?category=${cat.slug}`}
-                key={cat.id}
-                className="relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-sm border border-border/50"
+                className="snap-start shrink-0 w-[240px] md:w-auto relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-sm border border-border/50"
               >
                 {cat.image_url ? (
                   <Image
                     src={cat.image_url}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 1200px) 25vw, 20vw"
+                    sizes="(max-width: 768px) 240px, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
                   <div className="absolute inset-0 bg-muted flex items-center justify-center">
-                    <Hexagon className="w-8 h-8 text-muted-foreground" />
+                    <Hexagon className="w-10 h-10 text-muted-foreground/50" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-                  <span className="text-sm font-bold text-foreground block truncate">
+                  <span className="text-sm font-bold text-white block truncate">
                     {cat.name}
                   </span>
-                  <div className="w-6 h-6 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-                    <ArrowRight className="w-3 h-3 text-foreground" />
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>
               </Link>
             ))}
             <Link
               href="/products"
-              className="relative aspect-[4/3] rounded-2xl overflow-hidden group bg-primary flex items-center justify-center shadow-sm"
+              className="snap-start shrink-0 w-[240px] md:w-auto relative aspect-[4/3] rounded-2xl overflow-hidden group bg-primary flex items-center justify-center shadow-sm"
             >
               <div className="text-center p-4">
-                <LayoutGrid className="w-6 h-6 text-foreground mb-2 mx-auto opacity-80 group-hover:scale-110 transition-transform" />
-                <span className="text-sm font-bold text-foreground block">
+                <LayoutGrid className="w-8 h-8 text-primary-foreground mb-3 mx-auto opacity-90 group-hover:scale-110 transition-transform" />
+                <span className="text-base font-bold text-primary-foreground block">
                   Tüm Ürünler
                 </span>
-                <span className="text-xs text-foreground/70 block mt-1">
+                <span className="text-sm text-primary-foreground/80 block mt-1">
                   Koleksiyonu Gör
                 </span>
               </div>
@@ -169,107 +158,118 @@ export default async function Home() {
       </section>
       {/* 4. Banner Section 1 */}{" "}
       <section className="w-full py-16">
-        {" "}
         <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {" "}
-          <div className="relative rounded-3xl overflow-hidden bg-primary aspect-[4/3] lg:aspect-auto lg:h-[500px] flex items-center">
-            {" "}
-            <div className="relative z-10 p-10 max-w-sm">
-              {" "}
-              <div className="w-10 h-10 mb-6 text-foreground">
-                {" "}
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 22h20L12 2zm0 4.2l7.1 13.8H4.9L12 6.2z" />
-                </svg>{" "}
-              </div>{" "}
-              <h2 className="text-4xl font-black text-foreground leading-[1.1] mb-6">
-                Tarzınızı
-                <br />
-                Yansıtın,
-                <br />
-                İnternete Özel.
-              </h2>{" "}
-              <Link
-                href="/products"
-                className="text-foreground/80 hover:text-foreground font-medium text-sm transition-colors"
-              >
-                {" "}
-                Yücel Avize ile tanışın.{" "}
-              </Link>{" "}
-            </div>{" "}
-            <div className="absolute right-0 bottom-0 w-3/4 h-3/4">
-              {" "}
-              <Image
-                src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=800&auto=format&fit=crop"
-                alt="Kampanya"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover rounded-tl-full opacity-90 mix-blend-luminosity"
-              />{" "}
-            </div>{" "}
-          </div>{" "}
+          {largeBanner && (
+            <div className="relative rounded-3xl overflow-hidden bg-primary aspect-[4/3] lg:aspect-auto lg:h-[500px] flex items-center">
+              <div className="relative z-10 p-10 max-w-sm">
+                <div className="w-10 h-10 mb-6 text-foreground">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L2 22h20L12 2zm0 4.2l7.1 13.8H4.9L12 6.2z" />
+                  </svg>
+                </div>
+                {largeBanner.title && (
+                  <h2 
+                    className="text-4xl font-black text-foreground leading-[1.1] mb-6"
+                    dangerouslySetInnerHTML={{ __html: largeBanner.title }}
+                  />
+                )}
+                <Link
+                  href={largeBanner.link_url || "/products"}
+                  className="text-foreground/80 hover:text-foreground font-medium text-sm transition-colors"
+                >
+                  {largeBanner.subtitle || "Alışverişe Başla"}
+                </Link>
+              </div>
+              {largeBanner.image_url && (
+                <div className="absolute right-0 bottom-0 w-3/4 h-3/4">
+                  <Image
+                    src={largeBanner.image_url}
+                    alt={largeBanner.title?.replace(/<[^>]*>?/gm, '') || "Banner"}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover rounded-tl-full opacity-90 mix-blend-luminosity"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col gap-6 h-full">
-            {" "}
-            <div className="relative flex-1 rounded-3xl overflow-hidden bg-muted border border-border flex items-center p-8 min-h-[240px]">
-              {" "}
-              <div className="relative z-10 max-w-[200px]">
-                {" "}
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Modern Koleksiyon
-                </p>{" "}
-                <h3 className="text-2xl font-bold text-foreground leading-tight mb-6">
-                  Aksesuar koleksiyonumuzu keşfedin
-                </h3>{" "}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
-                >
-                  {" "}
-                  İncele{" "}
-                </Link>{" "}
-              </div>{" "}
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 w-40 h-40">
-                {" "}
-                <Image
-                  src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=400&auto=format&fit=crop"
-                  alt="Aksesuar"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover rounded-full"
-                />{" "}
-              </div>{" "}
-            </div>{" "}
-            <div className="relative flex-1 rounded-3xl overflow-hidden bg-muted border border-border flex items-center p-8 min-h-[240px]">
-              {" "}
-              <div className="relative z-10 max-w-[200px]">
-                {" "}
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
-                  Lüks Aydınlatma
-                </p>{" "}
-                <h3 className="text-2xl font-bold text-foreground leading-tight mb-6">
-                  Özel tasarım serimizi inceleyin
-                </h3>{" "}
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
-                >
-                  {" "}
-                  Alışverişe Başla{" "}
-                </Link>{" "}
-              </div>{" "}
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 w-48 h-40">
-                {" "}
-                <Image
-                  src="https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?q=80&w=400&auto=format&fit=crop"
-                  alt="Ayakkabı"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover rounded-2xl"
-                />{" "}
-              </div>{" "}
-            </div>{" "}
-          </div>{" "}
-        </div>{" "}
+            {smallBanners && smallBanners[0] && (
+              <div className="relative flex-1 rounded-3xl overflow-hidden bg-muted border border-border flex items-center p-8 min-h-[240px]">
+                <div className="relative z-10 max-w-[200px]">
+                  {smallBanners[0].pre_title && (
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      {smallBanners[0].pre_title}
+                    </p>
+                  )}
+                  {smallBanners[0].title && (
+                    <h3 
+                      className="text-2xl font-bold text-foreground leading-tight mb-6"
+                      dangerouslySetInnerHTML={{ __html: smallBanners[0].title }}
+                    />
+                  )}
+                  {smallBanners[0].button_text && (
+                    <Link
+                      href={smallBanners[0].link_url || "/products"}
+                      className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+                    >
+                      {smallBanners[0].button_text}
+                    </Link>
+                  )}
+                </div>
+                {smallBanners[0].image_url && (
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 w-40 h-40">
+                    <Image
+                      src={smallBanners[0].image_url}
+                      alt={smallBanners[0].title?.replace(/<[^>]*>?/gm, '') || "Banner"}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover rounded-full"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {smallBanners && smallBanners[1] && (
+              <div className="relative flex-1 rounded-3xl overflow-hidden bg-muted border border-border flex items-center p-8 min-h-[240px]">
+                <div className="relative z-10 max-w-[200px]">
+                  {smallBanners[1].pre_title && (
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                      {smallBanners[1].pre_title}
+                    </p>
+                  )}
+                  {smallBanners[1].title && (
+                    <h3 
+                      className="text-2xl font-bold text-foreground leading-tight mb-6"
+                      dangerouslySetInnerHTML={{ __html: smallBanners[1].title }}
+                    />
+                  )}
+                  {smallBanners[1].button_text && (
+                    <Link
+                      href={smallBanners[1].link_url || "/products"}
+                      className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+                    >
+                      {smallBanners[1].button_text}
+                    </Link>
+                  )}
+                </div>
+                {smallBanners[1].image_url && (
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 w-48 h-40">
+                    <Image
+                      src={smallBanners[1].image_url}
+                      alt={smallBanners[1].title?.replace(/<[^>]*>?/gm, '') || "Banner"}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover rounded-2xl"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </section>{" "}
       {/* 5. Featured Deals */}{" "}
       <section className="w-full py-16">

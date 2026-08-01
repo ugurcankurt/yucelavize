@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Star, MessageSquare, ImagePlus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,12 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { addReview } from "@/app/actions/reviews";
-import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import Link from "next/link";
+import { useReviewForm } from "@/hooks/use-review-form";
 
 interface Review {
   id: string;
@@ -34,133 +32,41 @@ interface ProductReviewsProps {
   isEligible: boolean;
 }
 
-const convertToWebP = async (file: File): Promise<File> => {
-  try {
-    let sourceFile: Blob = file;
 
-    if (
-      file.type === "image/heic" || 
-      file.type === "image/heif" || 
-      file.name.toLowerCase().endsWith(".heic") ||
-      file.name.toLowerCase().endsWith(".heif")
-    ) {
-      const heic2any = (await import("heic2any")).default;
-      const converted = await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.8
-      });
-      sourceFile = Array.isArray(converted) ? converted[0] : converted;
-    }
-
-    const imageBitmap = await createImageBitmap(sourceFile);
-    const canvas = document.createElement("canvas");
-    canvas.width = imageBitmap.width;
-    canvas.height = imageBitmap.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas context oluşturulamadı");
-    ctx.drawImage(imageBitmap, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error("WebP dönüşüm hatası"));
-          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-          resolve(new File([blob], newName, { type: "image/webp" }));
-        },
-        "image/webp",
-        0.8,
-      );
-    });
-  } catch (error) {
-    throw new Error(`Görsel işlenemedi: ${(error as Error).message}`);
-  }
-};
 
 export function ProductReviews({ productId, reviews, isEligible }: ProductReviewsProps) {
-  const [rating, setRating] = useState<number>(5);
-  const [comment, setComment] = useState("");
-  const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
-  const [loading, setLoading] = useState(false);
+  const getMaskedName = (name: string) => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return name;
+    const firstName = parts.slice(0, -1).join(" ");
+    const lastName = parts[parts.length - 1];
+    return `${firstName} ${lastName.charAt(0)}***`;
+  };
+
   const [showForm, setShowForm] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const {
+    rating,
+    setRating,
+    comment,
+    setComment,
+    images,
+    loading,
+    fileInputRef,
+    handleImageChange,
+    removeImage,
+    submitReview,
+  } = useReviewForm({
+    onSuccess: () => setShowForm(false)
+  });
 
   // Lightbox State
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      if (images.length + e.target.files.length > 5) {
-        toast.add({ title: "Uyarı", description: "En fazla 5 görsel yükleyebilirsiniz.", type: "error" } as any);
-        return;
-      }
-      setLoading(true);
-      const newImages: { file: File; preview: string }[] = [];
-      for (let i = 0; i < e.target.files.length; i++) {
-        const file = e.target.files[i];
-        try {
-          const webpFile = await convertToWebP(file);
-          newImages.push({
-            file: webpFile,
-            preview: URL.createObjectURL(webpFile),
-          });
-        } catch (error) {
-          console.error("WebP dönüşüm hatası:", error);
-        }
-      }
-      setImages((prev) => [...prev, ...newImages]);
-      setLoading(false);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating < 1 || rating > 5) return;
-    if (!comment.trim()) {
-      toast.add({ title: "Uyarı", description: "Lütfen bir yorum yazın.", type: "error" } as any);
-      return;
-    }
-
-    setLoading(true);
-    
-    // Upload Images
-    const uploadedUrls: string[] = [];
-    if (images.length > 0) {
-      for (const img of images) {
-        const fileName = `${productId}-${Date.now()}-${Math.random().toString(36).substring(7)}.webp`;
-        const { data, error } = await supabase.storage
-          .from("review-images")
-          .upload(fileName, img.file, { cacheControl: "3600", upsert: false });
-        
-        if (error) {
-          console.error("Görsel yüklenemedi:", error);
-        } else if (data) {
-          const { data: publicUrlData } = supabase.storage
-            .from("review-images")
-            .getPublicUrl(data.path);
-          uploadedUrls.push(publicUrlData.publicUrl);
-        }
-      }
-    }
-
-    const result = await addReview(productId, rating, comment, uploadedUrls);
-    
-    if (result.error) {
-      toast.add({ title: "Hata", description: result.error, type: "error" } as any);
-    } else {
-      toast.add({ title: "Başarılı", description: "Yorumunuz başarıyla eklendi.", type: "success" } as any);
-      setShowForm(false);
-      setComment("");
-      setRating(5);
-      setImages([]);
-    }
-    setLoading(false);
+    await submitReview(productId);
   };
 
   const openLightbox = (imgs: string[], index: number) => {
@@ -329,7 +235,7 @@ export function ProductReviews({ productId, reviews, isEligible }: ProductReview
                     </Link>
                     <div className="flex flex-col">
                       <Link href={`/user/${review.user_id}`} className="group/user block w-fit">
-                        <h4 className="font-bold text-foreground text-lg leading-none mb-1.5 group-hover/user:text-primary transition-colors group-hover/user:underline underline-offset-4">{review.user_name}</h4>
+                        <h4 className="font-bold text-foreground text-lg leading-none mb-1.5 group-hover/user:text-primary transition-colors group-hover/user:underline underline-offset-4">{getMaskedName(review.user_name)}</h4>
                       </Link>
                       <div className="flex items-center gap-2">
                         <div className="flex gap-0.5">

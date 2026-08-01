@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Figtree, Raleway } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toast";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const ralewayHeading = Raleway({subsets:['latin'],variable:'--font-heading'});
+
+const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +35,10 @@ export default function RootLayout({
     <html
       lang="tr"
       className={cn(
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable,
-      )}
+              "antialiased",
+              geistSans.variable,
+              geistMono.variable,
+              "font-sans", figtree.variable, ralewayHeading.variable)}
     >
       <body className="min-h-screen flex flex-col">
         {children}

@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductsFilter } from "@/components/storefront/products-filter";
+import { getUserFavorites } from "@/lib/services/user-service";
+
 export const metadata = {
   title: "Tüm Ürünler | Yücel Avize",
   description:
@@ -73,16 +75,7 @@ export default async function ProductsPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  let userFavorites: string[] = [];
-  if (user) {
-    const { data: favs } = await supabase
-      .from("favorites")
-      .select("product_id")
-      .eq("user_id", user.id);
-    if (favs) {
-      userFavorites = favs.map((f) => f.product_id);
-    }
-  }
+  const userFavorites = await getUserFavorites(supabase, user?.id);
   const pageTitle = categoryData
     ? categoryData.name
     : resolvedSearchParams.search

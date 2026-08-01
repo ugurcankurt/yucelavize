@@ -52,8 +52,8 @@ export function ProductGallery({
     };
   }, [mainApi, thumbApi]);
 
-  // Sync Carousel with URL Color parameter
-  const color = searchParams.get("color");
+  // Sync Carousel with URL Variation parameter
+  const color = searchParams.get("variation") || searchParams.get("color");
   useEffect(() => {
     if (!mainApi || !colorMapping || !color) return;
 

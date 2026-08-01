@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     redirect("/auth/login");
@@ -46,7 +46,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
     .eq("order_id", order.id);
 
   const getStatusDisplay = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'pending':
         return { label: 'Ödeme Bekleniyor', variant: 'warning' as const, icon: Clock };
       case 'confirmed':
@@ -68,7 +68,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 lg:space-y-8 animate-in fade-in duration-500 pb-12">
-      
+
       {/* 1. Header & Navigation */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
@@ -89,7 +89,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
             Sipariş Tarihi: <span className="font-bold text-foreground">{new Date(order.created_at).toLocaleDateString("tr-TR")}</span>
           </p>
         </div>
-        
+
         <div className="flex w-full sm:w-auto gap-3">
           <Button variant="outline" className="flex-1 sm:flex-none rounded-xl font-bold h-11">
             <FileText className="w-4 h-4 mr-2" /> Fatura İndir
@@ -104,10 +104,10 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
 
       {/* 2. Main Layout (Addresses + Items / Summary) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-        
+
         {/* Left Column: Items and Addresses */}
         <div className="lg:col-span-8 space-y-6 lg:space-y-8">
-          
+
           {/* Adres Bilgileri */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden bg-card/50">
@@ -122,7 +122,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                 </p>
               </CardContent>
             </Card>
-            
+
             <Card className="rounded-2xl border-border/60 shadow-sm overflow-hidden bg-card/50">
               <CardHeader className="pb-3 border-b border-border/40 bg-muted/30">
                 <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
@@ -159,7 +159,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                           className="object-cover"
                         />
                       </div>
-                      
+
                       {/* Ürün Bilgileri */}
                       <div className="flex-1 min-w-0 space-y-1">
                         <Link href={item.products?.slug ? `/products/${item.products.slug}` : "#"} className="group">
@@ -170,7 +170,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                         {item.products?.sku && (
                           <p className="text-xs text-muted-foreground font-medium">SKU: {item.products.sku}</p>
                         )}
-                        
+
                         <div className="flex flex-wrap items-center gap-3 pt-2">
                           <div className="bg-muted px-2.5 py-1 rounded-md text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                             Adet: <span className="text-foreground">{item.quantity}</span>
@@ -180,7 +180,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Ürün Toplam Tutar */}
                       <div className="sm:text-right shrink-0 mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-0 border-border/40 w-full sm:w-auto flex sm:block justify-between items-center">
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Toplam</p>
@@ -196,9 +196,9 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
               </div>
             </CardContent>
           </Card>
-          
+
         </div>
-        
+
         {/* Right Column: Order Summary */}
         <div className="lg:col-span-4">
           <div className="sticky top-24 space-y-6">
@@ -212,32 +212,31 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                     <span>Sipariş Tarihi</span>
                     <span className="text-foreground">{new Date(order.created_at).toLocaleDateString("tr-TR")}</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Ara Toplam</span>
                     <span className="text-foreground">₺{order.total_amount.toLocaleString("tr-TR")}</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center text-muted-foreground">
                     <span>Kargo Ücreti</span>
                     <span className="text-primary font-bold">Ücretsiz</span>
                   </div>
-                  
+
                   {order.coupon_code && (
                     <div className="flex justify-between items-center text-success">
                       <span>İndirim ({order.coupon_code})</span>
                       <span className="font-bold">-₺{order.discount_total || 0}</span>
                     </div>
                   )}
-                  
+
                   <Separator className="my-2" />
-                  
+
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between items-end">
                       <span className="text-base font-bold text-muted-foreground">Genel Toplam</span>
                       <span className="text-3xl font-black text-primary">₺{order.total_amount.toLocaleString("tr-TR")}</span>
                     </div>
-                    <p className="text-[11px] text-right text-muted-foreground font-semibold">Tüm vergiler dahildir.</p>
                   </div>
                 </div>
               </CardContent>
@@ -264,9 +263,9 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                     </div>
                   )}
                   {order.tracking_url && (
-                    <Button 
+                    <Button
                       nativeButton={false}
-                      render={<a href={order.tracking_url} target="_blank" rel="noopener noreferrer" />} 
+                      render={<a href={order.tracking_url} target="_blank" rel="noopener noreferrer" />}
                       className="w-full font-bold h-11 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20"
                     >
                       Kargom Nerede?
@@ -278,9 +277,9 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
 
           </div>
         </div>
-        
+
       </div>
-      
+
     </div>
   );
 }

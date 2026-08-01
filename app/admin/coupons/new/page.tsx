@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { AdminFormLayout } from "@/components/admin/admin-form-layout";
+import { Button } from "@/components/ui/button";
 
 export default function NewCouponPage() {
   async function createCoupon(formData: FormData) {
@@ -33,15 +32,8 @@ export default function NewCouponPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" nativeButton={false} render={<Link href="/admin/coupons" />}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-2xl font-bold tracking-tight">Yeni Kupon</h2>
-      </div>
-
-      <form action={createCoupon} className="space-y-6 bg-white dark:bg-black p-6 rounded-lg border">
+    <AdminFormLayout title="Yeni Kupon" backHref="/admin/coupons">
+      <form action={createCoupon} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="code">Kupon Kodu</Label>
           <Input id="code" name="code" required placeholder="Örn: YAZ10" className="uppercase" />
@@ -86,6 +78,6 @@ export default function NewCouponPage() {
           Kupon Oluştur
         </Button>
       </form>
-    </div>
+    </AdminFormLayout>
   );
 }

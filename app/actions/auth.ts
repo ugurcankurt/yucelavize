@@ -116,3 +116,18 @@ export async function updatePassword(password: string) {
 
   return { success: true };
 }
+
+export async function sendPasswordResetEmail(formData: FormData, origin: string) {
+  const email = formData.get("email") as string;
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}

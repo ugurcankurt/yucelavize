@@ -57,12 +57,21 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = path.startsWith('/admin') && !path.startsWith('/admin/login');
   const isAccountRoute = path.startsWith('/account');
 
+  function redirectWithCookies(redirectPath: string) {
+    const url = request.nextUrl.clone();
+    url.pathname = redirectPath;
+    const redirectResponse = NextResponse.redirect(url);
+    // Copy cookies from supabaseResponse to the redirect response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie.name, cookie.value);
+    });
+    return redirectResponse;
+  }
+
   // If going to an admin route
   if (isAdminRoute) {
     if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
+      return redirectWithCookies('/admin/login');
     }
 
     // Check if the user is an admin from the profiles table
@@ -73,18 +82,21 @@ export async function updateSession(request: NextRequest) {
       .single();
 
     if (!profile || profile.role !== 'admin') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/';
-      return NextResponse.redirect(url); // Redirect non-admins to home
+      return redirectWithCookies('/'); // Redirect non-admins to home
     }
   }
 
   // If going to a customer account route
   if (isAccountRoute) {
     if (!user) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/auth/login';
-      return NextResponse.redirect(url);
+      return redirectWithCookies('/auth/login');
+    }
+  }
+
+  // If going to an auth route and already logged in
+  if (path.startsWith('/auth') && !path.startsWith('/auth/callback')) {
+    if (user) {
+      return redirectWithCookies('/account');
     }
   }
 

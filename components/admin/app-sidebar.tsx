@@ -19,6 +19,7 @@ const items = [
   { title: "Ürünler", url: "/admin/products", icon: Package },
   { title: "Müşteriler", url: "/admin/customers", icon: Users },
   { title: "Slider Yönetimi", url: "/admin/slides", icon: ImageIcon },
+  { title: "Banner Yönetimi", url: "/admin/banners", icon: ImageIcon },
   { title: "Kampanyalar", url: "/admin/campaigns", icon: Package },
   { title: "Kuponlar", url: "/admin/coupons", icon: Package },
   { title: "Ayarlar", url: "/admin/settings", icon: Settings },

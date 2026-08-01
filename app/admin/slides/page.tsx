@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -8,10 +9,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createClient } from "@/lib/supabase/server";
-import { Plus, Edit, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import Image from "next/image";
 import { revalidatePath } from "next/cache";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Edit, Trash2, MoreHorizontal, Power } from "lucide-react";
 
 export default async function AdminSlidesPage() {
   const supabase = await createClient();
@@ -42,16 +46,13 @@ export default async function AdminSlidesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Slider Yönetimi</h2>
-        <Link href="/admin/slides/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Yeni Slayt Ekle
-          </Button>
-        </Link>
-      </div>
+      <AdminPageHeader 
+        title="Slider Yönetimi" 
+        action={{ href: "/admin/slides/new", label: "Yeni Slayt Ekle" }} 
+      />
 
-      <div className="rounded-md border bg-white dark:bg-black">
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -101,40 +102,43 @@ export default async function AdminSlidesPage() {
                 </TableCell>
                 <TableCell>{slide.sort_order}</TableCell>
                 <TableCell>
-                  <form action={toggleStatus.bind(null, slide.id, slide.is_active)}>
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      size="sm"
-                      className={`h-8 px-2 text-xs font-medium ${
-                        slide.is_active
-                          ? "bg-success/10 text-success border-success/20 hover:bg-success/20 hover:text-success"
-                          : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
-                      }`}
-                    >
-                      {slide.is_active ? "Aktif" : "Pasif"}
-                    </Button>
-                  </form>
+                  <Badge variant={slide.is_active ? "success" : "secondary"}>
+                    {slide.is_active ? "Aktif" : "Pasif"}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Link href={`/admin/slides/${slide.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <form action={deleteSlide.bind(null, slide.id)}>
-                      <Button variant="ghost" size="icon" type="submit" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </form>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem render={<Link href={`/admin/slides/${slide.id}`} className="cursor-pointer flex items-center" />}>
+                        <Edit className="w-4 h-4 mr-2" /> Düzenle
+                      </DropdownMenuItem>
+                      <form action={toggleStatus.bind(null, slide.id, slide.is_active)}>
+                        <button type="submit" className="w-full">
+                          <DropdownMenuItem className="cursor-pointer flex items-center">
+                            <Power className="w-4 h-4 mr-2" /> Durumu Değiştir
+                          </DropdownMenuItem>
+                        </button>
+                      </form>
+                      <DropdownMenuSeparator />
+                      <form action={deleteSlide.bind(null, slide.id)}>
+                        <button type="submit" className="w-full">
+                          <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer flex items-center">
+                            <Trash2 className="w-4 h-4 mr-2" /> Sil
+                          </DropdownMenuItem>
+                        </button>
+                      </form>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

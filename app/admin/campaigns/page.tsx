@@ -7,10 +7,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Trash2 } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Power } from "lucide-react";
 
 export default async function AdminCampaigns() {
   const supabase = await createClient();
@@ -42,16 +46,12 @@ export default async function AdminCampaigns() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Kampanyalar (Sezon İndirimleri)</h2>
-        <Button
-          nativeButton={false}
-          render={<Link href="/admin/campaigns/new" />}
-        >
-          <Plus className="mr-2 h-4 w-4" /> Yeni Kampanya
-        </Button>
-      </div>
-      <div className="rounded-md border bg-white dark:bg-black overflow-hidden">
+      <AdminPageHeader 
+        title="Kampanyalar (Sezon İndirimleri)" 
+        action={{ href: "/admin/campaigns/new", label: "Yeni Kampanya" }} 
+      />
+      <Card className="overflow-hidden border-border/60 shadow-sm">
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -89,27 +89,43 @@ export default async function AdminCampaigns() {
                   {campaign.discount_type === "percentage" ? `%${campaign.discount_amount}` : `₺${campaign.discount_amount}`}
                 </TableCell>
                 <TableCell>
-                  <form action={toggleActive}>
-                    <input type="hidden" name="id" value={campaign.id} />
-                    <input type="hidden" name="is_active" value={campaign.is_active.toString()} />
-                    <Button variant={campaign.is_active ? "default" : "outline"} size="sm" type="submit">
-                      {campaign.is_active ? "Aktif" : "Pasif"}
-                    </Button>
-                  </form>
+                  <Badge variant={campaign.is_active ? "success" : "secondary"}>
+                    {campaign.is_active ? "Aktif" : "Pasif"}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <form action={deleteCampaign}>
-                    <input type="hidden" name="id" value={campaign.id} />
-                    <Button variant="destructive" size="sm" type="submit">
-                      <Trash2 className="w-4 h-4 mr-1" /> Sil
-                    </Button>
-                  </form>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-8 w-8" />}>
+                      <MoreHorizontal className="h-4 w-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <form action={toggleActive}>
+                        <input type="hidden" name="id" value={campaign.id} />
+                        <input type="hidden" name="is_active" value={campaign.is_active.toString()} />
+                        <button type="submit" className="w-full">
+                          <DropdownMenuItem className="cursor-pointer flex items-center">
+                            <Power className="w-4 h-4 mr-2" /> Durumu Değiştir
+                          </DropdownMenuItem>
+                        </button>
+                      </form>
+                      <DropdownMenuSeparator />
+                      <form action={deleteCampaign}>
+                        <input type="hidden" name="id" value={campaign.id} />
+                        <button type="submit" className="w-full">
+                          <DropdownMenuItem className="text-destructive focus:bg-destructive/10 cursor-pointer flex items-center">
+                            <Trash2 className="w-4 h-4 mr-2" /> Sil
+                          </DropdownMenuItem>
+                        </button>
+                      </form>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

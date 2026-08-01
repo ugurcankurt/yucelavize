@@ -8,18 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { UploadCloud, X, Sparkles, Check } from "lucide-react";
 import Image from "next/image";
-// Preset colors
-
-const COLOR_OPTIONS = [
-  { id: "Siyah", hex: "#000000" },
-  { id: "Beyaz", hex: "#FFFFFF" },
-  { id: "Gri", hex: "#808080" },
-  { id: "Gold", hex: "#FFD700" },
-  { id: "Krom", hex: "#E8E9EB" },
-  { id: "Eskitme", hex: "#C0905D" },
-  { id: "Bakır", hex: "#B87333" },
-  { id: "Şeffaf", hex: "transparent" },
-];
+import { Plus } from "lucide-react";
 const convertToWebP = async (file: File): Promise<File> => {
   try {
     const imageBitmap = await createImageBitmap(file);
@@ -57,12 +46,13 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
     [],
   );
   const [generatingDesc, setGeneratingDesc] = useState(false);
-  const [selectedColors, setSelectedColors] = useState<string[]>(
-    initialData?.features?.colors || [],
+  const [selectedVariations, setSelectedVariations] = useState<string[]>(
+    initialData?.features?.variations || initialData?.features?.colors || [],
   );
-  const [colorMapping, setColorMapping] = useState<Record<string, string>>(
-    initialData?.features?.colorMapping || {},
+  const [variationMapping, setVariationMapping] = useState<Record<string, string>>(
+    initialData?.features?.variationMapping || initialData?.features?.colorMapping || {},
   );
+  const [newVariation, setNewVariation] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
@@ -107,12 +97,14 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
   const removeExistingImage = (index: number) => {
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
-  const toggleColor = (colorId: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(colorId)
-        ? prev.filter((c) => c !== colorId)
-        : [...prev, colorId],
-    );
+  const removeVariation = (varId: string) => {
+    setSelectedVariations((prev) => prev.filter((c) => c !== varId));
+  };
+  const handleAddVariation = () => {
+    if (newVariation.trim() && !selectedVariations.includes(newVariation.trim())) {
+      setSelectedVariations([...selectedVariations, newVariation.trim()]);
+      setNewVariation("");
+    }
   };
   const generateAIDescription = async () => {
     const name = nameRef.current?.value;
@@ -178,12 +170,12 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
       }
     }
     const allImages = [...existingImages, ...newImageUrls];
-    // Build final color mapping
-    const finalColorMapping: Record<string, string> = {};
-    for (const color of selectedColors) {
-      const mappedVal = colorMapping[color];
+    // Build final variation mapping
+    const finalVariationMapping: Record<string, string> = {};
+    for (const variation of selectedVariations) {
+      const mappedVal = variationMapping[variation];
       if (mappedVal) {
-        finalColorMapping[color] = previewToFinalUrlMap[mappedVal] || mappedVal;
+        finalVariationMapping[variation] = previewToFinalUrlMap[mappedVal] || mappedVal;
       }
     }
     // 2. Prepare payload
@@ -199,8 +191,8 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
       category_id: formData.get("category_id") as string,
       features: {
         ...(initialData?.features || {}),
-        colors: selectedColors,
-        colorMapping: finalColorMapping,
+        variations: selectedVariations,
+        variationMapping: finalVariationMapping,
         dimensions: {
           width: widthRef.current?.value || null,
           height: heightRef.current?.value || null,
@@ -373,102 +365,97 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
             </select>{" "}
           </div>{" "}
         </div>{" "}
-        {/* Renk Seçenekleri */}{" "}
+        {/* Varyasyon Seçenekleri */}
         <div className="space-y-3">
-          {" "}
-          <Label>Renk Seçenekleri</Label>{" "}
-          <div className="flex flex-wrap gap-3">
-            {" "}
-            {COLOR_OPTIONS.map((color) => {
-              const isSelected = selectedColors.includes(color.id);
-              return (
+          <Label>Varyasyonlar (Örn: Siyah 3'lü, Gold 40cm vb.)</Label>
+          <div className="flex items-center gap-2 max-w-sm">
+            <Input
+              value={newVariation}
+              onChange={(e) => setNewVariation(e.target.value)}
+              placeholder="Yeni varyasyon adı..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddVariation();
+                }
+              }}
+            />
+            <Button type="button" onClick={handleAddVariation} size="icon" variant="secondary" className="shrink-0">
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedVariations.map((variation) => (
+              <div
+                key={variation}
+                className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-medium"
+              >
+                {variation}
                 <button
-                  key={color.id}
                   type="button"
-                  onClick={() => toggleColor(color.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium transition-all ${isSelected ? "border-primary bg-indigo-50 text-primary " : "border-border hover:border-border bg-background text-muted-foreground "}`}
+                  onClick={() => removeVariation(variation)}
+                  className="hover:bg-primary/20 p-0.5 rounded-full text-primary"
                 >
-                  {" "}
-                  <span
-                    className="w-4 h-4 rounded-full border border-border shadow-sm flex items-center justify-center"
-                    style={{ backgroundColor: color.hex }}
-                  >
-                    {" "}
-                    {isSelected && (
-                      <Check className="w-3 h-3 text-foreground mix-blend-difference" />
-                    )}{" "}
-                  </span>{" "}
-                  {color.id}{" "}
+                  <X className="w-3 h-3" />
                 </button>
-              );
-            })}{" "}
-          </div>{" "}
-          <p className="text-xs text-muted-foreground">
-            Müşterileriniz ürün detay sayfasında bu renkleri seçebilecektir.
-          </p>{" "}
-          {selectedColors.length > 0 &&
+              </div>
+            ))}
+            {selectedVariations.length === 0 && (
+              <span className="text-sm text-muted-foreground italic">Henüz varyasyon eklenmedi.</span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Müşterileriniz ürün detay sayfasında bu varyasyonları seçebilecektir. (Enter'a basarak ekleyebilirsiniz)
+          </p>
+          {selectedVariations.length > 0 &&
             (existingImages.length > 0 || images.length > 0) && (
               <div className="mt-4 p-4 bg-muted rounded-lg border border-border space-y-4">
-                {" "}
                 <div>
-                  {" "}
                   <h4 className="text-sm font-semibold text-foreground">
-                    Renk ve Görsel Eşleştirme
-                  </h4>{" "}
+                    Varyasyon ve Görsel Eşleştirme
+                  </h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Müşteri bir renge tıkladığında galerinin otomatik olarak
+                    Müşteri bir varyasyona tıkladığında galerinin otomatik olarak
                     hangi görsele kayacağını seçin.
-                  </p>{" "}
-                </div>{" "}
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {" "}
-                  {selectedColors.map((colorId) => (
+                  {selectedVariations.map((variationId) => (
                     <div
-                      key={colorId}
+                      key={variationId}
                       className="flex items-center justify-between p-3 bg-background rounded-md border border-border shadow-sm"
                     >
-                      {" "}
-                      <span className="text-sm font-medium flex items-center gap-2">
-                        {" "}
-                        <span
-                          className="w-3 h-3 rounded-full border shadow-sm"
-                          style={{
-                            backgroundColor: COLOR_OPTIONS.find(
-                              (c) => c.id === colorId,
-                            )?.hex,
-                          }}
-                        />{" "}
-                        {colorId}{" "}
-                      </span>{" "}
+                      <span className="text-sm font-medium">
+                        {variationId}
+                      </span>
                       <select
-                        value={colorMapping[colorId] || ""}
+                        value={variationMapping[variationId] || ""}
                         onChange={(e) =>
-                          setColorMapping((prev) => ({
+                          setVariationMapping((prev) => ({
                             ...prev,
-                            [colorId]: e.target.value,
+                            [variationId]: e.target.value,
                           }))
                         }
                         className="text-sm border border-border rounded-md bg-muted px-2 py-1.5 w-[140px] focus:outline-none focus:ring-1 focus:ring-primary"
                       >
-                        {" "}
-                        <option value="">Görsel Seçin</option>{" "}
+                        <option value="">Görsel Seçin</option>
                         {existingImages.map((img, idx) => (
                           <option key={`ext-${idx}`} value={img}>
                             Mevcut Görsel {idx + 1}
                           </option>
-                        ))}{" "}
+                        ))}
                         {images.map((img, idx) => (
                           <option key={`new-${idx}`} value={img.preview}>
                             Yeni Görsel {idx + 1}
                           </option>
-                        ))}{" "}
-                      </select>{" "}
+                        ))}
+                      </select>
                     </div>
-                  ))}{" "}
-                </div>{" "}
+                  ))}
+                </div>
               </div>
-            )}{" "}
-        </div>{" "}
+            )}
+        </div>
         <div className="space-y-2">
           {" "}
           <div className="flex items-center justify-between">

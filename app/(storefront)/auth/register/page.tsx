@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
 export default function CustomerRegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,24 +22,11 @@ export default function CustomerRegisterPage() {
     }
   }
   return (
-    <div className="w-full bg-muted font-sans min-h-[80vh] flex items-center justify-center py-12 px-4">
-      {" "}
-      <div className="w-full max-w-md bg-background border border-border rounded-[32px] p-8 sm:p-10 shadow-xl shadow-gray-100/50">
-        {" "}
-        <div className="flex flex-col items-center text-center space-y-4 mb-8">
-          {" "}
-          <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
-            {" "}
-            <UserPlus className="w-6 h-6" />{" "}
-          </div>{" "}
-          <h1 className="text-3xl font-black text-foreground tracking-tight">
-            Kayıt Ol
-          </h1>{" "}
-          <p className="text-sm font-medium text-muted-foreground">
-            {" "}
-            Hemen bir hesap oluşturarak siparişlerinizi yönetmeye başlayın.{" "}
-          </p>{" "}
-        </div>{" "}
+    <AuthLayout
+      title="Kayıt Ol"
+      subtitle="Hemen bir hesap oluşturarak siparişlerinizi yönetmeye başlayın."
+      icon={UserPlus}
+    >
         {error && (
           <div className="mb-6 p-4 text-sm font-medium text-destructive bg-destructive/10 border border-destructive/30 rounded-xl flex items-center gap-3">
             {" "}
@@ -126,10 +114,9 @@ export default function CustomerRegisterPage() {
             className="font-bold text-foreground hover:text-primary transition-colors"
           >
             {" "}
-            Giriş Yapın{" "}
+            Giriş Yap{" "}
           </Link>{" "}
-        </div>{" "}
-      </div>{" "}
-    </div>
+        </div>
+    </AuthLayout>
   );
 }
