@@ -42,7 +42,7 @@ export default async function Home() {
     .select("*")
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
-  
+
   // Fetch active campaign
   const { data: activeCampaign } = await supabase
     .from("campaigns")
@@ -69,9 +69,9 @@ export default async function Home() {
     <div className="flex flex-col flex-1 w-full font-sans bg-background">
       {/* 1. Hero Section */}
       <HeroSlider slides={slides || []} />
-      
+
       {/* 2. Shop by Category */}
-      <section className="w-full py-16">
+      <section className="w-full py-12 md:py-20">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
           <div className="flex flex-col min-w-[200px] shrink-0">
             <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-2">
@@ -84,20 +84,20 @@ export default async function Home() {
               Tüm Koleksiyonlar
             </Link>
           </div>
-          
-          <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-4 snap-x scrollbar-hide md:grid md:grid-cols-4 md:overflow-visible md:pb-0 md:px-0 md:mx-0 md:flex-1">
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-6 md:pb-0 md:flex-1">
             {categories?.map((cat) => (
               <Link
                 href={`/products?category=${cat.slug}`}
                 key={cat.id}
-                className="snap-start shrink-0 w-[240px] md:w-auto relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-sm border border-border/50"
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-sm border border-border/50"
               >
                 {cat.image_url ? (
                   <Image
                     src={cat.image_url}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 768px) 240px, 25vw"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
@@ -106,26 +106,26 @@ export default async function Home() {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-                  <span className="text-sm font-bold text-white block truncate">
+                <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 flex items-center justify-between">
+                  <span className="text-sm md:text-sm font-bold text-white block truncate">
                     {cat.name}
                   </span>
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-                    <ArrowRight className="w-4 h-4 text-white" />
+                  <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                    <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 text-white" />
                   </div>
                 </div>
               </Link>
             ))}
             <Link
               href="/products"
-              className="snap-start shrink-0 w-[240px] md:w-auto relative aspect-[4/3] rounded-2xl overflow-hidden group bg-primary flex items-center justify-center shadow-sm"
+              className="relative aspect-[4/3] rounded-2xl overflow-hidden group bg-primary flex items-center justify-center shadow-sm"
             >
-              <div className="text-center p-4">
-                <LayoutGrid className="w-8 h-8 text-primary-foreground mb-3 mx-auto opacity-90 group-hover:scale-110 transition-transform" />
-                <span className="text-base font-bold text-primary-foreground block">
+              <div className="text-center p-3 md:p-4">
+                <LayoutGrid className="w-7 h-7 md:w-8 md:h-8 text-primary-foreground mb-2 md:mb-3 mx-auto opacity-90 group-hover:scale-110 transition-transform" />
+                <span className="text-sm md:text-base font-bold text-primary-foreground block">
                   Tüm Ürünler
                 </span>
-                <span className="text-sm text-primary-foreground/80 block mt-1">
+                <span className="text-xs md:text-sm text-primary-foreground/80 block mt-0.5 md:mt-1">
                   Koleksiyonu Gör
                 </span>
               </div>
@@ -134,7 +134,7 @@ export default async function Home() {
         </div>
       </section>
       {/* 3. New Arrivals */}
-      <section className="w-full py-16 bg-muted">
+      <section className="w-full py-12 md:py-20 bg-muted">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-10">
             <h2 className="text-[26px] font-bold text-foreground tracking-tight">
@@ -147,7 +147,7 @@ export default async function Home() {
               Tümünü Gör
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10">
             {newArrivals?.map((product) => (
               <ProductCard
                 key={product.id}
@@ -160,7 +160,7 @@ export default async function Home() {
         </div>
       </section>
       {/* 4. Banner Section 1 */}{" "}
-      <section className="w-full py-16">
+      <section className="w-full py-12 md:py-20">
         <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {largeBanner && (
             <div className="relative rounded-3xl overflow-hidden bg-primary aspect-[4/3] lg:aspect-auto lg:h-[500px] flex items-center">
@@ -171,7 +171,7 @@ export default async function Home() {
                   </svg>
                 </div>
                 {largeBanner.title && (
-                  <h2 
+                  <h2
                     className="text-4xl font-black text-foreground leading-[1.1] mb-6"
                     dangerouslySetInnerHTML={{ __html: largeBanner.title }}
                   />
@@ -207,7 +207,7 @@ export default async function Home() {
                     </p>
                   )}
                   {smallBanners[0].title && (
-                    <h3 
+                    <h3
                       className="text-2xl font-bold text-foreground leading-tight mb-6"
                       dangerouslySetInnerHTML={{ __html: smallBanners[0].title }}
                     />
@@ -244,7 +244,7 @@ export default async function Home() {
                     </p>
                   )}
                   {smallBanners[1].title && (
-                    <h3 
+                    <h3
                       className="text-2xl font-bold text-foreground leading-tight mb-6"
                       dangerouslySetInnerHTML={{ __html: smallBanners[1].title }}
                     />
@@ -274,13 +274,12 @@ export default async function Home() {
           </div>
         </div>
       </section>{" "}
-      {/* 5. Featured Deals */}{" "}
       {/* 5. Photo Reviews Slider */}
       {photoReviews && photoReviews.length > 0 && (
         <PhotoReviewsSlider reviews={photoReviews} />
       )}{" "}
       {/* 6. Shop by Brands */}{" "}
-      <section className="w-full py-16 border-y border-border bg-muted">
+      <section className="w-full py-12 md:py-20 border-y border-border bg-muted">
         {" "}
         <div className="container mx-auto px-4">
           {" "}
@@ -314,7 +313,7 @@ export default async function Home() {
         </div>{" "}
       </section>{" "}
       {/* 7. Recent Post */}{" "}
-      <section className="w-full py-24">
+      <section className="w-full py-12 py-20">
         {" "}
         <div className="container mx-auto px-4">
           {" "}
