@@ -68,6 +68,16 @@ export async function updateAvatarUrl(avatarUrl: string) {
     return { error: "User not found" };
   }
 
+  // 1. Eski avatarı Storage'dan sil (eğer varsa)
+  const oldAvatarUrl = user.user_metadata?.avatar_url;
+  if (oldAvatarUrl && oldAvatarUrl.includes('/avatars/')) {
+    const oldFilePath = oldAvatarUrl.split('/avatars/')[1];
+    if (oldFilePath) {
+      await supabase.storage.from("avatars").remove([oldFilePath]);
+    }
+  }
+
+  // 2. Yeni avatarı auth.users tablosuna kaydet
   const { error } = await supabase.auth.updateUser({
     data: { avatar_url: avatarUrl }
   });
@@ -75,6 +85,9 @@ export async function updateAvatarUrl(avatarUrl: string) {
   if (error) {
     return { error: error.message };
   }
+
+  // 3. profiles tablosunu güncelle (senkronizasyon için)
+  await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", user.id);
 
   revalidatePath("/", "layout");
   return { success: true };
@@ -87,6 +100,16 @@ export async function removeAvatarUrl() {
     return { error: "User not found" };
   }
 
+  // 1. Storage üzerinden sil
+  const avatarUrl = user.user_metadata?.avatar_url;
+  if (avatarUrl && avatarUrl.includes('/avatars/')) {
+    const filePath = avatarUrl.split('/avatars/')[1];
+    if (filePath) {
+      await supabase.storage.from("avatars").remove([filePath]);
+    }
+  }
+
+  // 2. auth.users tablosunu güncelle
   const { error } = await supabase.auth.updateUser({
     data: { avatar_url: null }
   });
@@ -94,6 +117,9 @@ export async function removeAvatarUrl() {
   if (error) {
     return { error: error.message };
   }
+
+  // 3. profiles tablosunu güncelle (senkronizasyon için)
+  await supabase.from("profiles").update({ avatar_url: null }).eq("id", user.id);
 
   revalidatePath("/", "layout");
   return { success: true };

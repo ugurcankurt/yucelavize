@@ -8,31 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { createClient } from "@/lib/supabase/client";
 import { UploadCloud, X, Sparkles, Check } from "lucide-react";
 import Image from "next/image";
-import { Plus } from "lucide-react";
-const convertToWebP = async (file: File): Promise<File> => {
-  try {
-    const imageBitmap = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    canvas.width = imageBitmap.width;
-    canvas.height = imageBitmap.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas context oluşturulamadı");
-    ctx.drawImage(imageBitmap, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error("WebP blob dönüştürme başarısız"));
-          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-          resolve(new File([blob], newName, { type: "image/webp" }));
-        },
-        "image/webp",
-        0.8,
-      );
-    });
-  } catch (error) {
-    throw new Error(`Görsel işlenemedi: ${(error as Error).message}`);
-  }
-};
+import { Loader2, Plus, GripVertical } from "lucide-react";
+import { convertToWebP } from "@/lib/utils/image";
+
 export function ProductForm({ initialData = null }: { initialData?: any }) {
   const router = useRouter();
   const supabase = createClient();
@@ -78,7 +56,7 @@ export function ProductForm({ initialData = null }: { initialData?: any }) {
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i];
         try {
-          const webpFile = await convertToWebP(file);
+          const webpFile = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
           newImages.push({
             file: webpFile,
             preview: URL.createObjectURL(webpFile),

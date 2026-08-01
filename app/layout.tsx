@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter, Figtree, Raleway } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toast";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const ralewayHeading = Raleway({subsets:['latin'],variable:'--font-heading'});
 
@@ -40,9 +42,15 @@ export default function RootLayout({
               geistMono.variable,
               "font-sans", figtree.variable, ralewayHeading.variable)}
     >
+      <head>
+        <link rel="preconnect" href="https://jzqhcopfzejewhqjaisp.supabase.co" />
+        <link rel="dns-prefetch" href="https://jzqhcopfzejewhqjaisp.supabase.co" />
+      </head>
       <body className="min-h-screen flex flex-col">
         {children}
         <Toaster />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -261,6 +261,7 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
               className="relative w-9 h-9 rounded-full bg-primary-foreground/10 flex items-center justify-center transition-colors hover:bg-primary-foreground/20 text-primary-foreground hover:text-primary-foreground"
               iconClassName="w-[18px] h-[18px]"
               badgeClassName="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center border border-primary"
+              hideDrawer={true}
             />
           </div>
         </div>

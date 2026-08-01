@@ -29,6 +29,7 @@ import {
 import {
   Drawer,
   DrawerClose,
+  DrawerSwipeHandle,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -42,6 +43,7 @@ interface CartIconProps {
   className?: string;
   iconClassName?: string;
   badgeClassName?: string;
+  hideDrawer?: boolean;
 }
 
 function RemoveItemDialog({
@@ -78,22 +80,22 @@ function RemoveItemDialog({
 
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Drawer swipeDirection="up" open={open} onOpenChange={onOpenChange}>
         {" "}
-        <SheetTrigger render={<button className="text-muted-foreground hover:text-destructive transition-colors p-1" />}>
+        <DrawerTrigger render={<button className="text-muted-foreground hover:text-destructive transition-colors p-1" />}>
           {" "}
           <Trash2 className="w-4 h-4" />{" "}
-        </SheetTrigger>{" "}
-        <SheetContent side="bottom" overlayClassName="z-[60] bg-black/60 backdrop-blur-sm" className="z-[60] rounded-t-[32px] px-4 pb-8 h-auto bg-background border-none shadow-2xl">
+        </DrawerTrigger>{" "}
+        <DrawerContent className="z-[60] rounded-t-[32px] rounded-b-none px-4 pb-8 h-auto bg-background border-none shadow-2xl !m-0 !max-w-none w-full [--drawer-inset:0px]">
           {" "}
-          <SheetHeader className="text-center sm:text-center mt-2 px-0 border-0">
+          <DrawerHeader className="text-center sm:text-center mt-2 px-0 border-0">
             {" "}
-            <SheetTitle className="text-xl font-bold flex justify-center text-foreground">Sepetten Çıkar?</SheetTitle>{" "}
+            <DrawerTitle className="text-xl font-bold flex justify-center text-foreground">Sepetten Çıkar?</DrawerTitle>{" "}
             <ProductPreview />
-          </SheetHeader>{" "}
+          </DrawerHeader>{" "}
           <div className="flex gap-3 pt-6 w-full">
             {" "}
-            <SheetClose render={
+            <DrawerClose render={
               <Button variant="secondary" className="flex-1 h-12 rounded-full font-bold text-base bg-muted hover:bg-muted/80 text-foreground" onClick={() => onOpenChange(false)}>
                 Vazgeç
               </Button>
@@ -102,8 +104,8 @@ function RemoveItemDialog({
               Evet, Sil
             </Button>{" "}
           </div>{" "}
-        </SheetContent>{" "}
-      </Sheet>
+        </DrawerContent>{" "}
+      </Drawer>
     );
   }
 
@@ -142,7 +144,7 @@ function RemoveItemDialog({
   );
 }
 
-export function CartIcon({ className, iconClassName, badgeClassName }: CartIconProps = {}) {
+export function CartIcon({ className, iconClassName, badgeClassName, hideDrawer = false }: CartIconProps = {}) {
   const cart = useCart();
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -164,47 +166,59 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
 
   const itemCount = mounted ? cart.getItemCount() : 0;
   const cartTotal = mounted ? cart.getTotal() : 0;
+  
+  const isMobilePortrait = isMobile && !isLandscapeMobile;
+
+  const triggerButton = (
+    <Button variant="ghost" size="icon" className={className || "w-9 h-9 relative"} onClick={() => cart.openCart()}>
+      <ShoppingCart className={iconClassName || "h-5 w-5"} />
+      {itemCount > 0 && (
+        <span className={badgeClassName || "absolute -top-1 -right-1 h-4 w-4 rounded-full bg-foreground text-[10px] font-bold text-background flex items-center justify-center"}>
+          {itemCount}
+        </span>
+      )}
+      <span className="sr-only">Sepet</span>
+    </Button>
+  );
+
+  if (hideDrawer) {
+    return triggerButton;
+  }
+
+  const Wrapper = isMobilePortrait ? Drawer : Sheet;
+  const WrapperTrigger = isMobilePortrait ? DrawerTrigger : SheetTrigger;
+  const WrapperContent = isMobilePortrait ? DrawerContent : SheetContent;
+  const WrapperHeader = isMobilePortrait ? DrawerHeader : SheetHeader;
+  const WrapperTitle = isMobilePortrait ? DrawerTitle : SheetTitle;
+  const WrapperClose = isMobilePortrait ? DrawerClose : SheetClose;
   return (
     <>
-    <Sheet open={cart.isOpen} onOpenChange={(open) => open ? cart.openCart() : cart.closeCart()}>
+    <Wrapper {...(isMobilePortrait ? { direction: "top" } : {})} swipeDirection="up" open={cart.isOpen} onOpenChange={(open) => open ? cart.openCart() : cart.closeCart()}>
       {" "}
-      <SheetTrigger
-        render={
-          <Button variant="ghost" size="icon" className={className || "w-9 h-9 relative"} onClick={() => cart.openCart()} />
-        }
-      >
-        {" "}
-        <ShoppingCart className={iconClassName || "h-5 w-5"} />{" "}
-        {itemCount > 0 && (
-          <span className={badgeClassName || "absolute -top-1 -right-1 h-4 w-4 rounded-full bg-foreground text-[10px] font-bold text-background flex items-center justify-center"}>
-            {" "}
-            {itemCount}{" "}
-          </span>
-        )}{" "}
-        <span className="sr-only">Sepet</span>{" "}
-      </SheetTrigger>{" "}
-      <SheetContent
-        side={isMobile && !isLandscapeMobile ? "top" : "right"}
-        overlayClassName={isMobile ? "z-[49]" : ""}
+      <WrapperTrigger render={triggerButton}>
+      </WrapperTrigger>{" "}
+      <WrapperContent
+        
+        
         className={
           isMobile && !isLandscapeMobile
-            ? "flex flex-col w-full h-full max-h-[85dvh] rounded-b-[32px] z-[49] pt-[48px] px-0 pb-0"
+            ? "flex flex-col w-full !max-w-none h-full max-h-[85dvh] rounded-b-[32px] rounded-t-none z-[49] pt-6 px-0 pb-0 !m-0 [--drawer-inset:0px]"
             : isLandscapeMobile
               ? "flex flex-col w-full sm:max-w-md p-0 z-[49]"
               : "flex flex-col w-full sm:max-w-md p-0"
         }
       >
         {" "}
-        <SheetHeader className={isMobile && !isLandscapeMobile ? "shrink-0 px-6 pb-4 border-b border-border" : "shrink-0 p-6 border-b border-border"}>
+        <WrapperHeader className={isMobile && !isLandscapeMobile ? "shrink-0 px-6 pb-4 border-b border-border" : "shrink-0 p-6 border-b border-border"}>
           {" "}
-          <SheetTitle className="text-xl font-bold flex items-center gap-2">
+          <WrapperTitle className="text-xl font-bold flex items-center gap-2">
             {" "}
             Sepetim{" "}
             <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
               {itemCount} Ürün
             </span>{" "}
-          </SheetTitle>{" "}
-        </SheetHeader>{" "}
+          </WrapperTitle>{" "}
+        </WrapperHeader>{" "}
         {!mounted ? (
           <div className="flex-1 flex items-center justify-center">
             {" "}
@@ -223,7 +237,7 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
               Sepetinizde henüz ürün bulunmamaktadır. Alışverişe başlamak için
               ürünlerimize göz atın.{" "}
             </p>{" "}
-            <SheetClose
+            <WrapperClose
               nativeButton={false}
               render={
                 <Button
@@ -235,7 +249,7 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
             >
               {" "}
               Alışverişe Başla{" "}
-            </SheetClose>{" "}
+            </WrapperClose>{" "}
           </div>
         ) : (
           <>
@@ -427,7 +441,7 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
                   ₺{cart.getFinalTotal().toLocaleString("tr-TR")}
                 </span>
               </div>
-              <SheetClose
+              <WrapperClose
                 nativeButton={false}
                 render={
                   <Button
@@ -438,12 +452,17 @@ export function CartIcon({ className, iconClassName, badgeClassName }: CartIconP
                 }
               >
                 Sepeti Onayla <ArrowRight className="w-5 h-5 ml-2" />
-              </SheetClose>
+              </WrapperClose>
             </div>
           </>
         )}{" "}
-      </SheetContent>{" "}
-    </Sheet>
+        {isMobilePortrait && (
+          <div className="flex justify-center pb-4 pt-2">
+            <DrawerSwipeHandle className="after:bg-foreground" />
+          </div>
+        )}
+      </WrapperContent>{" "}
+    </Wrapper>
     
     <RemoveItemDialog 
       item={itemToRemove} 

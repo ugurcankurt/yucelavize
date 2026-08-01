@@ -12,6 +12,7 @@ import { FavoriteButton } from "@/components/storefront/favorite-button";
 import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductReviews } from "@/components/storefront/product-reviews";
+import { ProductDescription } from "@/components/storefront/product-description";
 // Dynamic Metadata generation for SEO 2026 guidelines
 export async function generateMetadata({
   params,
@@ -325,13 +326,7 @@ export default async function ProductDetailPage({
                 variations={product.features?.variations || product.features?.colors}
               />
 
-              <div className="w-full mt-4 mb-6">
-                <h3 className="text-xl font-bold text-foreground mb-3">Ürün Açıklaması</h3>
-                <div
-                  className="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-              </div>
+              <ProductDescription content={product.description} />
 
               {/* Product Dimensions Visualizer */}{" "}
               <ProductDimensions

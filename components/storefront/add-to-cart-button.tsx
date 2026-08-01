@@ -4,6 +4,7 @@ import { ShoppingCart, Check } from "lucide-react";
 import { useCart, ProductType } from "@/hooks/use-cart";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 interface AddToCartButtonProps {
   product: ProductType;
   selectedColor?: string;
@@ -46,7 +47,14 @@ export function AddToCartButton({
       size={iconOnly ? "icon" : "lg"}
       onClick={handleAddToCart}
       disabled={disabled}
-      className={`${iconOnly ? "w-12 h-12 rounded-full" : "h-14 text-lg w-full"} transition-all ${isAdded ? "bg-success text-success-foreground hover:bg-success/90" : "bg-primary text-primary-foreground hover:bg-primary/90"} ${className || ""}`}
+      className={cn(
+        iconOnly ? "w-12 h-12 rounded-full" : "h-14 text-lg w-full",
+        "transition-all",
+        isAdded 
+          ? "bg-success text-success-foreground hover:bg-success/90" 
+          : "bg-primary text-primary-foreground hover:bg-primary/90",
+        className
+      )}
     >
       {" "}
       {isAdded ? (

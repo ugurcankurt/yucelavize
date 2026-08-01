@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { updateAvatarUrl, removeAvatarUrl } from "@/app/actions/auth";
+import { convertToWebP } from "@/lib/utils/image";
 interface AvatarUploadProps {
   userId: string;
   currentAvatarUrl?: string | null;
@@ -19,13 +20,15 @@ export function AvatarUpload({ userId, currentAvatarUrl }: AvatarUploadProps) {
       return;
     }
     setLoading(true);
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-    const filePath = `${userId}/${fileName}`;
+    
     try {
+      const webpFile = await convertToWebP(file, { maxWidth: 400, maxHeight: 400, quality: 0.8 });
+      const fileName = `${userId}-${Math.random().toString(36).substring(2, 9)}.webp`;
+      const filePath = `${userId}/${fileName}`;
+      
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, webpFile, { upsert: true });
       if (uploadError) throw uploadError;
       const {
         data: { publicUrl },

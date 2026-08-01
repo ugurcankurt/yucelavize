@@ -21,42 +21,24 @@ import { ProductCard } from "@/components/storefront/product-card";
 import { HeroSlider } from "@/components/storefront/hero-slider";
 import { getReviewsWithPhotos } from "@/app/actions/reviews";
 import { PhotoReviewsSlider } from "@/components/storefront/photo-reviews-slider";
+import { 
+  getCachedNewArrivals, 
+  getCachedCategories, 
+  getCachedHeroSlides, 
+  getCachedActiveCampaign, 
+  getCachedHomeBanners 
+} from "@/lib/services/public-data";
 
 export default async function Home() {
   const supabase = await createClient();
   const photoReviews = await getReviewsWithPhotos();
-  const { data: newArrivals } = await supabase
-    .from("products")
-    .select("id, name, slug, price, discounted_price, images, stock, category:categories(name), reviews(rating, status)")
-    .order("created_at", { ascending: false })
-    .limit(4);
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name, slug, image_url")
-    .order("name", { ascending: true })
-    .limit(7);
-
-  // Fetch active hero slides
-  const { data: slides } = await supabase
-    .from("hero_slides")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-
-  // Fetch active campaign
-  const { data: activeCampaign } = await supabase
-    .from("campaigns")
-    .select("*")
-    .eq("is_active", true)
-    .limit(1)
-    .maybeSingle();
-
-  // Fetch active home banners
-  const { data: banners } = await supabase
-    .from("home_banners")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+  
+  // Use cached data fetching for public entities
+  const newArrivals = await getCachedNewArrivals(4);
+  const categories = await getCachedCategories(7);
+  const slides = await getCachedHeroSlides();
+  const activeCampaign = await getCachedActiveCampaign();
+  const banners = await getCachedHomeBanners();
 
   const largeBanner = banners?.find(b => b.is_large);
   const smallBanners = banners?.filter(b => !b.is_large).slice(0, 2);
@@ -86,7 +68,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-6 md:pb-0 md:flex-1">
-            {categories?.map((cat) => (
+            {categories?.map((cat, index) => (
               <Link
                 href={`/products?category=${cat.slug}`}
                 key={cat.id}
@@ -97,6 +79,7 @@ export default async function Home() {
                     src={cat.image_url}
                     alt={cat.name}
                     fill
+                    priority={index < 4}
                     sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />

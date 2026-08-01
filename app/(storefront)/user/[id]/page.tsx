@@ -9,8 +9,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export const revalidate = 60; // Revalidate every 60 seconds
-
 export default async function UserProfilePage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const supabase = await createClient();

@@ -3,47 +3,7 @@ import { toast } from "@/components/ui/toast";
 import { createClient } from "@/lib/supabase/client";
 import { addReview } from "@/app/actions/reviews";
 
-export const convertToWebP = async (file: File): Promise<File> => {
-  try {
-    let sourceFile: Blob = file;
-
-    if (
-      file.type === "image/heic" || 
-      file.type === "image/heif" || 
-      file.name.toLowerCase().endsWith(".heic") ||
-      file.name.toLowerCase().endsWith(".heif")
-    ) {
-      const heic2any = (await import("heic2any")).default;
-      const converted = await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.8
-      });
-      sourceFile = Array.isArray(converted) ? converted[0] : converted;
-    }
-
-    const imageBitmap = await createImageBitmap(sourceFile);
-    const canvas = document.createElement("canvas");
-    canvas.width = imageBitmap.width;
-    canvas.height = imageBitmap.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas context oluşturulamadı");
-    ctx.drawImage(imageBitmap, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error("WebP dönüşüm hatası"));
-          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-          resolve(new File([blob], newName, { type: "image/webp" }));
-        },
-        "image/webp",
-        0.8,
-      );
-    });
-  } catch (error) {
-    throw new Error(`Görsel işlenemedi: ${(error as Error).message}`);
-  }
-};
+import { convertToWebP } from "@/lib/utils/image";
 
 export function useReviewForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const [rating, setRating] = useState<number>(5);
@@ -70,7 +30,7 @@ export function useReviewForm({ onSuccess }: { onSuccess?: () => void } = {}) {
       for (let i = 0; i < e.target.files.length; i++) {
         const file = e.target.files[i];
         try {
-          const webpFile = await convertToWebP(file);
+          const webpFile = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
           newImages.push({
             file: webpFile,
             preview: URL.createObjectURL(webpFile),

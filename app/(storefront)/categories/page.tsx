@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { getCachedCategories } from "@/lib/services/public-data";
 import Image from "next/image";
 import Link from "next/link";
 import { Package } from "lucide-react";
@@ -11,16 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CategoriesPage() {
-  const supabase = await createClient();
-
-  const { data: categories, error } = await supabase
-    .from("categories")
-    .select("id, name, slug, image_url")
-    .order("name", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching categories:", error);
-  }
+  const categories = await getCachedCategories();
 
   return (
     <div className="w-full">
@@ -40,7 +31,7 @@ export default async function CategoriesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <Link 
                 key={category.id} 
                 href={`/products?category=${category.slug}`}
@@ -53,6 +44,7 @@ export default async function CategoriesPage() {
                       src={category.image_url}
                       alt={category.name}
                       fill
+                      priority={index < 4}
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />

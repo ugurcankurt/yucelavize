@@ -12,33 +12,7 @@ import { toast } from "@/components/ui/toast";
 interface CategoryFormProps {
   initialData?: { id: string; name: string; slug: string; image_url?: string };
 }
-// Client-side WebP conversion function
-
-const convertToWebP = async (file: File): Promise<File> => {
-  try {
-    const imageBitmap = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    canvas.width = imageBitmap.width;
-    canvas.height = imageBitmap.height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas context oluşturulamadı");
-    ctx.drawImage(imageBitmap, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return reject(new Error("WebP blob dönüştürme başarısız"));
-          const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-          resolve(new File([blob], newName, { type: "image/webp" }));
-        },
-        "image/webp",
-        0.8,
-        // 80% quality
-      );
-    });
-  } catch (error) {
-    throw new Error(`Görsel işlenemedi: ${(error as Error).message}`);
-  }
-};
+import { convertToWebP } from "@/lib/utils/image";
 export function CategoryForm({ initialData }: CategoryFormProps) {
   const router = useRouter();
   const supabase = createClient();
@@ -52,7 +26,7 @@ export function CategoryForm({ initialData }: CategoryFormProps) {
       setLoading(true);
       const file = e.target.files[0];
       try {
-        const webpFile = await convertToWebP(file);
+        const webpFile = await convertToWebP(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
         setImage({ file: webpFile, preview: URL.createObjectURL(webpFile) });
       } catch (error) {
         console.error("WebP dönüşüm hatası:", error);

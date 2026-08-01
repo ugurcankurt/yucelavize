@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, ImagePlus } from "lucide-react";
 import Image from "next/image";
 import { createBanner, updateBanner } from "@/app/actions/banners";
+import { convertToWebP } from "@/lib/utils/image";
 
 interface BannerFormProps {
   initialData?: any;
@@ -83,15 +84,20 @@ export function BannerForm({ initialData }: BannerFormProps) {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setIsSubmitting(true);
+      try {
+        const webpFile = await convertToWebP(file, { maxWidth: 1920, maxHeight: 1080, quality: 0.8 });
+        setImageFile(webpFile);
+        setImagePreview(URL.createObjectURL(webpFile));
+      } catch (err) {
+        console.error(err);
+        setError("Görsel dönüştürülürken bir hata oluştu.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 

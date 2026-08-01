@@ -53,9 +53,8 @@ export function MobileBottomNav() {
           />
         )}
         
-        {/* The Shared Pill Container */}
         <div 
-          className={`lg:hidden fixed left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-zinc-900 rounded-[24px] shadow-2xl z-40 overflow-hidden cursor-pointer ${
+          className={`lg:hidden fixed left-1/2 -translate-x-1/2 w-[90%] max-w-sm rounded-[24px] shadow-2xl z-40 overflow-hidden cursor-pointer transition-colors duration-300 bg-primary text-primary-foreground ${
             isProductPage && isExpanded ? "bottom-6 p-4 flex-col flex" : "bottom-6 h-16"
           }`}
           onClick={() => {
@@ -77,10 +76,10 @@ export function MobileBottomNav() {
                   href={item.href}
                   onClick={(e) => e.stopPropagation()}
                   className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
-                    isActive ? "bg-white text-zinc-900 shadow-md scale-105" : "text-zinc-400 hover:text-white"
+                    isActive ? "bg-primary-foreground text-primary shadow-md scale-105" : "text-primary-foreground/70 hover:text-primary-foreground"
                   }`}
                 >
-                  <item.icon className={`w-[22px] h-[22px] ${isActive ? "fill-zinc-900" : ""}`} strokeWidth={isActive ? 2 : 1.5} />
+                  <item.icon className={`w-[22px] h-[22px] ${isActive ? "fill-primary" : ""}`} strokeWidth={isActive ? 2 : 1.5} />
                 </Link>
               );
             })}
@@ -96,30 +95,30 @@ export function MobileBottomNav() {
               <>
                 {/* Left: Price */}
                 <div className="flex flex-col px-3 justify-center min-w-max">
-                  <span className="text-base font-extrabold text-white tracking-tight leading-none">₺{product.price.toLocaleString("tr-TR")}</span>
+                  <span className="text-base font-extrabold text-primary-foreground tracking-tight leading-none">₺{product.price.toLocaleString("tr-TR")}</span>
                 </div>
                 
                 {/* Middle: Variations */}
                 <div className="flex-1 flex flex-col items-center justify-center px-1 overflow-hidden">
                   {hasVariations && !selectedVariation ? (
                     <div className="flex flex-col items-center">
-                      <span className="text-[9px] font-medium text-zinc-500 mb-1">Seçenek Belirleyin</span>
+                      <span className="text-[9px] font-medium text-primary-foreground/80 mb-1">Seçenek Belirleyin</span>
                       <div className="flex items-center -space-x-1">
                         {variations.slice(0, 3).map((v, i) => (
                           <div 
                             key={i} 
-                            className={`px-1.5 py-0.5 rounded-full border border-zinc-700 bg-zinc-800 text-[8px] text-zinc-300 shadow-sm truncate max-w-[40px]`} 
+                            className={`px-1.5 py-0.5 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 text-[8px] text-primary-foreground shadow-sm truncate max-w-[40px]`} 
                           >
                             {v}
                           </div>
                         ))}
                         {variations.length > 3 && (
-                          <span className="text-[9px] font-medium text-zinc-500 pl-1.5">+{variations.length - 3}</span>
+                          <span className="text-[9px] font-medium text-primary-foreground/80 pl-1.5">+{variations.length - 3}</span>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <span className="text-[11px] font-medium text-zinc-400 leading-tight text-center px-1 truncate max-w-full">
+                    <span className="text-[11px] font-medium text-primary-foreground/90 leading-tight text-center px-1 truncate max-w-full">
                       {selectedVariation ? `Seçim: ${selectedVariation}` : ""}
                     </span>
                   )}
@@ -128,8 +127,8 @@ export function MobileBottomNav() {
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2 pr-1">
                   {hasVariations && !selectedVariation && (
-                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center shadow-inner">
-                      <ChevronUp className="w-4 h-4 text-zinc-400" />
+                    <div className="w-8 h-8 rounded-full bg-primary-foreground/10 flex items-center justify-center shadow-inner">
+                      <ChevronUp className="w-4 h-4 text-primary-foreground/80" />
                     </div>
                   )}
                   <div onClick={(e) => {
@@ -143,7 +142,7 @@ export function MobileBottomNav() {
                       selectedColor={selectedVariation || undefined}
                       disabled={Boolean(hasVariations && !selectedVariation)}
                       iconOnly={true}
-                      className="w-12 h-12 shadow-md"
+                      className="w-12 h-12 shadow-md bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                       onAdded={() => setIsExpanded(false)}
                     />
                   </div>
@@ -152,9 +151,9 @@ export function MobileBottomNav() {
             ) : (
               /* Loading Skeleton */
               <div className="flex w-full h-full items-center justify-between px-3 opacity-50 animate-pulse">
-                <div className="w-16 h-8 bg-zinc-800 rounded-lg"></div>
+                <div className="w-16 h-8 bg-primary-foreground/20 rounded-lg"></div>
                 <div className="flex-1"></div>
-                <div className="w-12 h-12 bg-zinc-800 rounded-full"></div>
+                <div className="w-12 h-12 bg-primary-foreground/20 rounded-full"></div>
               </div>
             )}
           </div>
@@ -164,17 +163,18 @@ export function MobileBottomNav() {
             <div className="relative flex flex-col w-full h-full gap-4 animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-center justify-between px-1">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-zinc-400 line-clamp-1">{product.name}</span>
-                  <span className="text-xl font-extrabold text-white tracking-tight">₺{product.price.toLocaleString("tr-TR")}</span>
+                  <span className="text-sm font-medium text-primary-foreground/90 line-clamp-1">{product.name}</span>
+                  <span className="text-xl font-extrabold text-primary-foreground tracking-tight">₺{product.price.toLocaleString("tr-TR")}</span>
                 </div>
               </div>
               
               {hasVariations && (
-                <div className="px-1 -mt-1 scale-[0.95] origin-left [&_h3]:text-zinc-200">
+                <div className="px-1 -mt-1 scale-[0.95] origin-left">
                   <ColorSelector
                     colors={variations}
                     selectedColor={selectedVariation}
                     onSelectColor={handleSelectVariation}
+                    variant="navbar"
                   />
                 </div>
               )}
@@ -184,6 +184,7 @@ export function MobileBottomNav() {
                   product={product}
                   selectedColor={selectedVariation || undefined}
                   disabled={Boolean(hasVariations && !selectedVariation)}
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 w-full font-bold shadow-lg"
                   onAdded={() => setIsExpanded(false)}
                 />
               </div>

@@ -4,6 +4,7 @@ import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav";
 import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { ScrollToTop } from "@/components/storefront/scroll-to-top";
+import { getCachedCategories } from "@/lib/services/public-data";
 export default async function StorefrontLayout({
   children,
 }: {
@@ -39,10 +40,7 @@ export default async function StorefrontLayout({
       }
     }
   }
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
+  const categories = await getCachedCategories();
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <ScrollToTop />
