@@ -21,7 +21,7 @@ export function Footer() {
           </div>{" "}
           <div className="flex flex-col sm:flex-row items-center gap-8 md:gap-16">
             {" "}
-            <div className="flex items-center gap-3">
+            <a href="mailto:destek@yucelavize.com" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {" "}
               <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-background text-primary">
                 {" "}
@@ -36,8 +36,8 @@ export function Footer() {
                   destek@yucelavize.com
                 </span>{" "}
               </div>{" "}
-            </div>{" "}
-            <div className="flex items-center gap-3">
+            </a>{" "}
+            <a href="tel:+905431543457" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               {" "}
               <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center bg-background text-primary">
                 {" "}
@@ -49,10 +49,10 @@ export function Footer() {
                   Müşteri Hizmetleri
                 </span>{" "}
                 <span className="text-sm font-semibold text-foreground">
-                  +90 850 123 45 67
+                  +90 543 154 34 57
                 </span>{" "}
               </div>{" "}
-            </div>{" "}
+            </a>{" "}
           </div>{" "}
         </div>{" "}
       </div>{" "}

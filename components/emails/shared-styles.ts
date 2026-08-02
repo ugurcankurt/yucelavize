@@ -19,7 +19,7 @@ export const sharedStyles = {
     textAlign: "center" as const,
   },
   headerStorefront: {
-    backgroundColor: "#dc2626",
+    backgroundColor: "#0d9488",
     padding: "40px 20px",
     textAlign: "center" as const,
   },
@@ -55,10 +55,10 @@ export const sharedStyles = {
   },
   sectionStorefront: {
     padding: "24px",
-    backgroundColor: "#fef2f2",
+    backgroundColor: "#f0fdfa",
     borderRadius: "16px",
     margin: "30px 0",
-    border: "1px solid #fecaca", 
+    border: "1px solid #99f6e4", 
   },
   strongAdmin: {
     color: "#18181b",
@@ -67,7 +67,7 @@ export const sharedStyles = {
     margin: "0 0 16px",
   },
   strongStorefront: {
-    color: "#dc2626",
+    color: "#0d9488",
     fontWeight: "800",
     fontSize: "18px",
     margin: "0 0 16px",
@@ -77,7 +77,7 @@ export const sharedStyles = {
     margin: "12px 0 16px",
   },
   sectionHrStorefront: {
-    borderColor: "#fca5a5",
+    borderColor: "#5eead4",
     margin: "12px 0 16px",
   },
   textRow: {
@@ -104,7 +104,7 @@ export const sharedStyles = {
   },
   valueTotalStorefront: {
     fontWeight: "700",
-    color: "#dc2626",
+    color: "#0d9488",
     float: "right" as const,
     fontSize: "18px",
   },
@@ -124,7 +124,7 @@ export const sharedStyles = {
     textAlign: "center" as const,
   },
   button: {
-    backgroundColor: "#dc2626",
+    backgroundColor: "#0d9488",
     color: "#ffffff",
     padding: "16px 32px",
     borderRadius: "9999px",
