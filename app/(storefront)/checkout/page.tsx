@@ -59,6 +59,9 @@ export default function CheckoutPage() {
     setGoogleLoading(true);
     // Set a cookie so the callback route knows where to redirect
     document.cookie = `next-redirect=/checkout; path=/; max-age=300; SameSite=Lax`;
+    // Fallback bulletproof redirect using localStorage
+    window.localStorage.setItem("next-redirect", "/checkout");
+    
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

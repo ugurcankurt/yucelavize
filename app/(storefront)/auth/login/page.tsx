@@ -20,6 +20,9 @@ export default function CustomerLoginPage() {
     setGoogleLoading(true);
     // Set a cookie so the callback route knows where to redirect
     document.cookie = `next-redirect=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=Lax`;
+    // Fallback bulletproof redirect using localStorage
+    window.localStorage.setItem("next-redirect", nextUrl);
+    
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
