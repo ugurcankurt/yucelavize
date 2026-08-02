@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { createClient } from "@/lib/supabase/client";
 export default function CustomerRegisterPage() {
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get("next") || "/account";
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -18,7 +21,7 @@ export default function CustomerRegisterPage() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/account`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${nextUrl}`,
       },
     });
   }
@@ -28,7 +31,7 @@ export default function CustomerRegisterPage() {
     setLoading(true);
     setError(null);
     const formData = new FormData(e.currentTarget);
-    const result = await signup(formData);
+    const result = await signup(formData, nextUrl);
     if (result?.error) {
       setError(result.error);
       setLoading(false);
@@ -159,9 +162,9 @@ export default function CustomerRegisterPage() {
         </form>{" "}
         <div className="mt-8 text-center text-sm font-medium text-muted-foreground">
           {" "}
-          Zaten bir hesabınız var mı?{""}{" "}
+          Zaten hesabınız var mı?{" "}
           <Link
-            href="/auth/login"
+            href={`/auth/login?next=${nextUrl}`}
             className="font-bold text-foreground hover:text-primary transition-colors"
           >
             {" "}

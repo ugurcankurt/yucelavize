@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 export default function CustomerLoginPage() {
   const searchParams = useSearchParams();
   const registered = searchParams.get("registered");
+  const nextUrl = searchParams.get("next") || "/account";
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function CustomerLoginPage() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/account`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${nextUrl}`,
       },
     });
   }
@@ -31,7 +32,7 @@ export default function CustomerLoginPage() {
     setLoading(true);
     setError(null);
     const formData = new FormData(e.currentTarget);
-    const result = await login(formData, "/account");
+    const result = await login(formData, nextUrl);
     if (result?.error) {
       setError(result.error);
       setLoading(false);
@@ -174,9 +175,9 @@ export default function CustomerLoginPage() {
         </form>{" "}
         <div className="mt-8 text-center text-sm font-medium text-muted-foreground">
           {" "}
-          Hesabınız yok mu?{""}{" "}
+          Hesabınız yok mu?{" "}
           <Link
-            href="/auth/register"
+            href={`/auth/register?next=${nextUrl}`}
             className="font-bold text-foreground hover:text-primary transition-colors"
           >
             {" "}

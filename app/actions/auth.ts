@@ -23,7 +23,7 @@ export async function login(formData: FormData, redirectTo: string = "/") {
   redirect(redirectTo);
 }
 
-export async function signup(formData: FormData) {
+export async function signup(formData: FormData, redirectToUrl: string = "/account") {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const fullName = formData.get("fullName") as string;
@@ -47,10 +47,10 @@ export async function signup(formData: FormData) {
 
   // If email confirmations are disabled, data.session will be present
   if (data.session) {
-    redirect("/account");
+    redirect(redirectToUrl);
   } else {
     // Otherwise, they need to confirm their email
-    redirect("/auth/login?registered=true");
+    redirect(`/auth/login?registered=true&next=${redirectToUrl}`);
   }
 }
 

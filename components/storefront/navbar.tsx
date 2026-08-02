@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import {
   Search,
@@ -35,7 +34,10 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+
+  const loginUrl = pathname ? `/auth/login?next=${pathname}` : `/auth/login`;
 
   const currentCategorySlug = searchParams.get("category");
   const currentCategory = categories.find(
@@ -219,7 +221,7 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
               </DropdownMenu>
             ) : (
               <Link
-                href="/auth/login"
+                href={loginUrl}
                 className="flex items-center gap-2 sm:gap-3 cursor-pointer group"
               >
                 {" "}
