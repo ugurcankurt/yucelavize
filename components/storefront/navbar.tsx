@@ -44,11 +44,11 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
   const categoryLabel = currentCategory
     ? currentCategory.name
     : "Tüm Kategoriler";;
-  
+
   // Close mobile search on scroll with a grace period to prevent instant closing due to layout shifts
   useEffect(() => {
     if (!isMobileSearchOpen) return;
-    
+
     let isActive = false;
     // 300ms grace period to allow expansion animation without triggering scroll close
     const timer = setTimeout(() => {
@@ -83,12 +83,20 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-6">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link href="/" className="flex items-center flex-shrink-0">
-              <span className="text-[22px] md:text-[26px] font-black tracking-tighter text-primary">
-                yücel<span className="text-foreground">avize</span>
-              </span>
+            <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-36 h-12 md:w-44 md:h-14">
+              <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain z-0" priority />
+              <div className="absolute inset-0 flex items-center justify-center text-[24px] md:text-[28px] font-black tracking-tighter leading-none drop-shadow-sm">
+                <div className="relative">
+                  <span aria-hidden="true" className="absolute inset-0 z-0 text-white [-webkit-text-stroke:3px_#ffffff] pointer-events-none select-none">
+                    yücelavize
+                  </span>
+                  <span className="relative z-10 text-primary">
+                    yücel<span className="text-foreground">avize</span>
+                  </span>
+                </div>
+              </div>
             </Link>
-            
+
             {/* Nav Links */}
             <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
               <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors">
@@ -243,10 +251,18 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
       <div className="lg:hidden flex flex-col w-full bg-primary text-primary-foreground rounded-b-[24px] pt-3 pb-3 px-4 shadow-md relative z-20 transition-all duration-300">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center flex-shrink-0">
-            <span className="text-[22px] font-black tracking-tighter text-primary-foreground">
-              yücel<span className="text-primary-foreground/70">avize</span>
-            </span>
+          <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-32 h-14">
+            <Image src="/yucel_avize_white_logo.png" alt="Yücel Avize Logo" fill sizes="150px" className="object-contain z-0" priority />
+            <div className="absolute inset-0 flex items-center justify-center text-[28px] font-black tracking-tighter leading-none">
+              <div className="relative">
+                <span aria-hidden="true" className="absolute inset-0 z-0 text-primary [-webkit-text-stroke:4px_currentColor] pointer-events-none select-none">
+                  yücelavize
+                </span>
+                <span className="relative z-10 text-white">
+                  yücelavize
+                </span>
+              </div>
+            </div>
           </Link>
 
           {/* Actions (Search Toggle, Cart) */}
@@ -270,10 +286,10 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
         </div>
 
         <div ref={mobileSearchRef}>
-          <SearchBar 
-            variant="mobile" 
-            isMobileOpen={isMobileSearchOpen} 
-            onMobileClose={() => setIsMobileSearchOpen(false)} 
+          <SearchBar
+            variant="mobile"
+            isMobileOpen={isMobileSearchOpen}
+            onMobileClose={() => setIsMobileSearchOpen(false)}
           />
         </div>
       </div>
