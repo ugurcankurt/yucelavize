@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { resend } from '@/lib/resend'
 import { WelcomeEmail } from '@/components/emails/welcome-email'
@@ -6,8 +7,11 @@ import { WelcomeEmail } from '@/components/emails/welcome-email'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  
+  const cookieStore = await cookies()
+  const cookieNext = cookieStore.get('next-redirect')?.value
   // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/'
+  const next = searchParams.get('next') ?? cookieNext ?? '/'
 
   if (code) {
     const supabase = await createClient()

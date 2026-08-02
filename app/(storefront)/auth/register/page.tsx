@@ -17,11 +17,12 @@ export default function CustomerRegisterPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
+    document.cookie = `next-redirect=${nextUrl}; path=/; max-age=300; SameSite=Lax`;
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${nextUrl}`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   }
