@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star, MessageSquare, ImagePlus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,15 +26,14 @@ interface Review {
   user_avatar?: string | null;
 }
 
+import { checkReviewEligibility } from "@/app/actions/reviews";
+
 interface ProductReviewsProps {
   productId: string;
   reviews: Review[];
-  isEligible: boolean;
 }
 
-
-
-export function ProductReviews({ productId, reviews, isEligible }: ProductReviewsProps) {
+export function ProductReviews({ productId, reviews }: ProductReviewsProps) {
   const getMaskedName = (name: string) => {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return name;
@@ -58,6 +57,11 @@ export function ProductReviews({ productId, reviews, isEligible }: ProductReview
   } = useReviewForm({
     onSuccess: () => setShowForm(false)
   });
+
+  const [isEligible, setIsEligible] = useState(false);
+  useEffect(() => {
+    checkReviewEligibility(productId).then(setIsEligible);
+  }, [productId]);
 
   // Lightbox State
   const [lightboxOpen, setLightboxOpen] = useState(false);

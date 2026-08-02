@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { publicSupabase } from "@/lib/services/public-data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +7,16 @@ import { Metadata, ResolvingMetadata } from "next";
 
 // Revalidate every hour
 export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const { data: posts } = await publicSupabase
+    .from("blog_posts")
+    .select("slug")
+    .eq("is_published", true);
+  
+  if (!posts) return [];
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -17,7 +27,7 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = publicSupabase;
 
   const { data: post } = await supabase
     .from("blog_posts")
@@ -55,7 +65,7 @@ export async function generateMetadata(
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = publicSupabase;
 
   const { data: post, error } = await supabase
     .from("blog_posts")

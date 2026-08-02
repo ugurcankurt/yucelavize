@@ -57,6 +57,8 @@ export default function CheckoutPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
+    // Set a cookie so the callback route knows where to redirect
+    document.cookie = `next-redirect=/checkout; path=/; max-age=300; SameSite=Lax`;
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

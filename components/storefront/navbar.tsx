@@ -25,17 +25,53 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SearchBar } from "./search-bar";
 
+import { createClient } from "@/lib/supabase/client";
+
 interface NavbarProps {
-  user?: any;
-  profile?: any;
   categories?: any[];
 }
-export function Navbar({ user, profile, categories = [] }: NavbarProps) {
+export function Navbar({ categories = [] }: NavbarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+        setProfile(data);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+    };
+    fetchUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+          setProfile(data);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const loginUrl = pathname ? `/auth/login?next=${pathname}` : `/auth/login`;
 
@@ -45,7 +81,7 @@ export function Navbar({ user, profile, categories = [] }: NavbarProps) {
   );
   const categoryLabel = currentCategory
     ? currentCategory.name
-    : "Tüm Kategoriler";;
+    : "Tüm Kategoriler";
 
   // Close mobile search on scroll with a grace period to prevent instant closing due to layout shifts
   useEffect(() => {

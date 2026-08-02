@@ -119,3 +119,33 @@ export async function getReviewsWithPhotos() {
     user_avatar: r.user_id ? profileMap[r.user_id] || null : null
   }));
 }
+
+export async function checkReviewEligibility(productId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: orderItem } = await supabase
+    .from("order_items")
+    .select(`
+      id,
+      orders!inner(user_id, status)
+    `)
+    .eq("product_id", productId)
+    .eq("orders.user_id", user.id)
+    .eq("orders.status", "delivered")
+    .limit(1);
+
+  if (!orderItem || orderItem.length === 0) return false;
+
+  const { data: existingReview } = await supabase
+    .from("reviews")
+    .select("id")
+    .eq("product_id", productId)
+    .eq("user_id", user.id)
+    .limit(1);
+
+  if (existingReview && existingReview.length > 0) return false;
+
+  return true;
+}

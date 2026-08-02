@@ -42,3 +42,14 @@ export async function toggleFavorite(productId: string) {
     return { isFavorite: true };
   }
 }
+
+export async function getMyFavorites() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data: favs } = await supabase
+    .from("favorites")
+    .select("product_id")
+    .eq("user_id", user.id);
+  return favs?.map((f: any) => f.product_id) || [];
+}

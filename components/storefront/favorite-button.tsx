@@ -1,32 +1,48 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { toggleFavorite } from "@/app/actions/favorites";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
+import { useFavorites } from "@/hooks/use-favorites";
+
 interface FavoriteButtonProps {
   productId: string;
-  initialIsFavorite: boolean;
+  initialIsFavorite?: boolean;
   className?: string;
   iconClassName?: string;
 }
 export function FavoriteButton({
   productId,
-  initialIsFavorite,
+  initialIsFavorite = false,
   className,
   iconClassName,
 }: FavoriteButtonProps) {
+  const router = useRouter();
+  const { favorites, initialized, toggleFavoriteLocal } = useFavorites();
+  
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+
+  // Sync with global store when it initializes or updates
+  useEffect(() => {
+    if (initialized) {
+      setIsFavorite(favorites.includes(productId));
+    }
+  }, [initialized, favorites, productId]);
+
   const handleToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (loading) return;
+    
+    const previousState = isFavorite;
     /* Optimistic update */ setIsFavorite(!isFavorite);
     setLoading(true);
+    
     const result = await toggleFavorite(productId);
+    
     if (result.error) {
       if (result.error === "Lütfen giriş yapın.") {
         router.push("/auth/login");
@@ -36,10 +52,12 @@ export function FavoriteButton({
           description: result.error,
           type: "error",
         } as any);
-        setIsFavorite(isFavorite); /* Revert */
+        setIsFavorite(previousState); /* Revert */
       }
     } else if (result.isFavorite !== undefined) {
       setIsFavorite(result.isFavorite);
+      toggleFavoriteLocal(productId);
+      
       if (result.isFavorite) {
         toast.add({
           title: "Favorilere Eklendi",

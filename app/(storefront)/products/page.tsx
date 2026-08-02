@@ -1,9 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { publicSupabase } from "@/lib/services/public-data";
 import Image from "next/image";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductsFilter } from "@/components/storefront/products-filter";
 import { PageHero } from "@/components/storefront/page-hero";
-import { getUserFavorites } from "@/lib/services/user-service";
 
 import { Metadata, ResolvingMetadata } from "next";
 
@@ -20,7 +19,7 @@ export async function generateMetadata(
   let description = "Yücel Avize'nin lüks ve modern aydınlatma koleksiyonunu keşfedin.";
 
   if (categorySlug) {
-    const supabase = await createClient();
+    const supabase = publicSupabase;
     const { data: cat } = await supabase
       .from("categories")
       .select("name, description")
@@ -54,7 +53,7 @@ export default async function ProductsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const supabase = await createClient();
+  const supabase = publicSupabase;
   let categoryData = null;
   let query = supabase
     .from("products")
@@ -110,11 +109,6 @@ export default async function ProductsPage({
   
   const products = productsData.data;
   const activeCampaign = activeCampaignData.data;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userFavorites = await getUserFavorites(supabase, user?.id);
   const pageTitle = categoryData
     ? categoryData.name
     : resolvedSearchParams.search
@@ -168,7 +162,6 @@ export default async function ProductsPage({
               <ProductCard
                 key={product.id}
                 product={product}
-                isFavorite={userFavorites.includes(product.id)}
                 priority={index < 8}
                 activeCampaign={activeCampaign}
               />

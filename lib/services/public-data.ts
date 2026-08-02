@@ -5,7 +5,7 @@ import { unstable_cache } from "next/cache";
 // for public data. This allows Next.js to cache these requests globally.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const publicSupabase = createClient(supabaseUrl, supabaseKey);
+export const publicSupabase = createClient(supabaseUrl, supabaseKey);
 
 export const getCachedCategories = unstable_cache(
   async (limit?: number) => {
@@ -76,4 +76,90 @@ export const getCachedHomeBanners = unstable_cache(
   },
   ["public-home-banners"],
   { revalidate: 3600, tags: ["banners"] }
+);
+
+export const getCachedBrands = unstable_cache(
+  async () => {
+    const { data } = await publicSupabase
+      .from("brands")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    return data;
+  },
+  ["public-brands"],
+  { revalidate: 3600, tags: ["brands"] }
+);
+
+export const getCachedLatestBlogs = unstable_cache(
+  async (limit: number = 2) => {
+    const { data } = await publicSupabase
+      .from("blog_posts")
+      .select("id, title, slug, cover_image_url, category:category_id(name)")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    return data;
+  },
+  ["public-latest-blogs"],
+  { revalidate: 3600, tags: ["blog_posts"] }
+);
+
+export const getCachedPhotoReviews = unstable_cache(
+  async () => {
+    const { data: reviews, error } = await publicSupabase
+      .from("reviews")
+      .select(`
+        id,
+        user_id,
+        rating,
+        comment,
+        user_name,
+        created_at,
+        images,
+        products (
+          name,
+          slug
+        )
+      `)
+      .eq("status", "approved")
+      .not("images", "eq", "{}")
+      .not("images", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error || !reviews) {
+      console.error("Error fetching photo reviews:", error);
+      return [];
+    }
+
+    const filteredReviews = reviews.filter(r => r.images && r.images.length > 0);
+    
+    if (filteredReviews.length === 0) return [];
+
+    const userIds = [...new Set(filteredReviews.map(r => r.user_id).filter(Boolean))];
+    
+    let profileMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await publicSupabase
+        .from("profiles")
+        .select("id, avatar_url")
+        .in("id", userIds);
+        
+      if (profiles) {
+        profileMap = profiles.reduce((acc, p) => {
+          if (p.avatar_url) acc[p.id] = p.avatar_url;
+          return acc;
+        }, {} as Record<string, string>);
+      }
+    }
+
+    return filteredReviews.map(r => ({
+      ...r,
+      user_avatar: r.user_id ? profileMap[r.user_id] || null : null
+    }));
+  },
+  ["public-photo-reviews"],
+  { revalidate: 3600, tags: ["reviews"] }
 );

@@ -14,13 +14,13 @@ import {
 
 interface ProductCardProps {
   product: any;
-  isFavorite: boolean;
+  isFavorite?: boolean;
   priority?: boolean;
   activeCampaign?: any;
 }
 export function ProductCard({
   product,
-  isFavorite,
+  isFavorite = false,
   priority = false,
   activeCampaign,
 }: ProductCardProps) {

@@ -1,18 +1,27 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { publicSupabase } from "@/lib/services/public-data";
 import { ChevronRight, Home } from "lucide-react";
 import { ProductGallery } from "./product-gallery";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ProductDimensions } from "@/components/storefront/product-dimensions";
 import { ProductActionSection } from "@/components/storefront/product-action-section";
-import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
-import { FavoriteButton } from "@/components/storefront/favorite-button";
-import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductReviews } from "@/components/storefront/product-reviews";
 import { ProductDescription } from "@/components/storefront/product-description";
+
+export const revalidate = 3600; // ISR cache for 1 hour
+
+export async function generateStaticParams() {
+  const { data: products } = await publicSupabase
+    .from("products")
+    .select("slug");
+  
+  if (!products) return [];
+  return products.map((product) => ({ slug: product.slug }));
+}
+
 // Dynamic Metadata generation for SEO 2026 guidelines
 export async function generateMetadata({
   params,
@@ -20,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const resolvedParams = await params;
-  const supabase = await createClient();
+  const supabase = publicSupabase;
   const { data: product } = await supabase
     .from("products")
     .select("name, description, images, price")
@@ -48,7 +57,7 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = await params;
-  const supabase = await createClient();
+  const supabase = publicSupabase;
   const { data: product, error } = await supabase
     .from("products")
     .select("*, category:categories(name, slug), features")
@@ -57,11 +66,6 @@ export default async function ProductDetailPage({
   if (error || !product) {
     notFound();
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userFavorites = await getUserFavorites(supabase, user?.id);
-  const isFavorite = userFavorites.includes(product.id);
 
   // Fetch Reviews
   const { data: reviews } = await supabase
@@ -93,34 +97,6 @@ export default async function ProductDetailPage({
     ...r,
     user_avatar: profilesMap[r.user_id] || null
   }));
-  // Determine review eligibility
-  let isEligible = false;
-  if (user) {
-    const { data: orderItem } = await supabase
-      .from("order_items")
-      .select(`
-        id,
-        orders!inner(user_id, status)
-      `)
-      .eq("product_id", product.id)
-      .eq("orders.user_id", user.id)
-      .eq("orders.status", "delivered")
-      .limit(1);
-    
-    if (orderItem && orderItem.length > 0) {
-      // Check if user has already reviewed this product
-      const { data: existingReview } = await supabase
-        .from("reviews")
-        .select("id")
-        .eq("product_id", product.id)
-        .eq("user_id", user.id)
-        .limit(1);
-        
-      if (!existingReview || existingReview.length === 0) {
-        isEligible = true;
-      }
-    }
-  }
 
   // Fetch related products
   const { data: relatedProducts } = await supabase
@@ -257,7 +233,6 @@ export default async function ProductDetailPage({
                 images={images}
                 productName={product.name}
                 productId={product.id}
-                initialIsFavorite={isFavorite}
                 colorMapping={product.features?.colorMapping}
               />
             </div>
@@ -343,7 +318,6 @@ export default async function ProductDetailPage({
           <ProductReviews 
             productId={product.id} 
             reviews={enrichedReviews} 
-            isEligible={isEligible} 
           />
         </div>
 
@@ -358,7 +332,6 @@ export default async function ProductDetailPage({
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
-                  isFavorite={userFavorites.includes(relatedProduct.id)}
                   activeCampaign={activeCampaign}
                 />
               ))}

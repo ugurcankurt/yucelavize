@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import {
   ArrowRight,
   Lightbulb,
@@ -16,22 +15,22 @@ import {
   Truck,
   RefreshCw,
 } from "lucide-react";
-import { getUserFavorites } from "@/lib/services/user-service";
 import { ProductCard } from "@/components/storefront/product-card";
 import { HeroSlider } from "@/components/storefront/hero-slider";
-import { getReviewsWithPhotos } from "@/app/actions/reviews";
 import { PhotoReviewsSlider } from "@/components/storefront/photo-reviews-slider";
 import { 
   getCachedNewArrivals, 
   getCachedCategories, 
   getCachedHeroSlides, 
   getCachedActiveCampaign, 
-  getCachedHomeBanners 
+  getCachedHomeBanners,
+  getCachedBrands,
+  getCachedLatestBlogs,
+  getCachedPhotoReviews
 } from "@/lib/services/public-data";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const photoReviews = await getReviewsWithPhotos();
+  const photoReviews = await getCachedPhotoReviews();
   
   // Use cached data fetching for public entities
   const newArrivals = await getCachedNewArrivals(4);
@@ -39,28 +38,12 @@ export default async function Home() {
   const slides = await getCachedHeroSlides();
   const activeCampaign = await getCachedActiveCampaign();
   const banners = await getCachedHomeBanners();
+  const brands = await getCachedBrands();
+  const latestBlogs = await getCachedLatestBlogs(2);
 
   const largeBanner = banners?.find(b => b.is_large);
   const smallBanners = banners?.filter(b => !b.is_large).slice(0, 2);
 
-  const { data: brands } = await supabase
-    .from("brands")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-
-  const { data: latestBlogs } = await supabase
-    .from("blog_posts")
-    .select("id, title, slug, cover_image_url, category:category_id(name)")
-    .eq("is_published", true)
-    .order("published_at", { ascending: false })
-    .limit(2);
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userFavorites = await getUserFavorites(supabase, user?.id);
   return (
     <div className="flex flex-col flex-1 w-full font-sans bg-background">
       {/* 1. Hero Section */}
@@ -149,7 +132,6 @@ export default async function Home() {
               <ProductCard
                 key={product.id}
                 product={product}
-                isFavorite={userFavorites.includes(product.id)}
                 activeCampaign={activeCampaign}
               />
             ))}

@@ -24,14 +24,14 @@ interface ProductGalleryProps {
   images: string[];
   productName: string;
   productId: string;
-  initialIsFavorite: boolean;
+  initialIsFavorite?: boolean;
   colorMapping?: Record<string, string>;
 }
 export function ProductGallery({
   images,
   productName,
   productId,
-  initialIsFavorite,
+  initialIsFavorite = false,
   colorMapping,
 }: ProductGalleryProps) {
   const searchParams = useSearchParams();

@@ -17,6 +17,8 @@ export default function CustomerRegisterPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
+    // Set a cookie so the callback route knows where to redirect
+    document.cookie = `next-redirect=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=Lax`;
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
