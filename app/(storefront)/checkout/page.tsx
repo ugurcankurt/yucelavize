@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     title: "Fatura Adresim",
   });
 
-  const [bankInfo, setBankInfo] = useState({ bankName: "", iban: "" });
+  const [banks, setBanks] = useState<any[]>([]);
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
@@ -76,7 +76,11 @@ export default function CheckoutPage() {
         .single();
 
       if (settingsData?.value) {
-        setBankInfo(settingsData.value);
+        if (Array.isArray(settingsData.value)) {
+          setBanks(settingsData.value);
+        } else {
+          setBanks([settingsData.value]);
+        }
       }
 
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -647,23 +651,45 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="p-5 bg-background border border-border rounded-xl space-y-4 shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <Building className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Banka & Alıcı Adı</p>
-                      <p className="font-bold text-foreground text-sm sm:text-base">{bankInfo.bankName || "Yücel Avize Ltd. Şti."}</p>
-                    </div>
-                  </div>
+                <div className="space-y-4">
+                  {banks.length > 0 ? (
+                    banks.map((bank, idx) => (
+                      <div key={idx} className="p-5 bg-background border border-border rounded-xl space-y-4 shadow-sm">
+                        <div className="flex flex-col gap-4 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                              <Building className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Banka Adı</p>
+                              <p className="font-bold text-foreground text-sm sm:text-base">{bank.bankName || "Banka bilgisi yok"}</p>
+                            </div>
+                          </div>
 
-                  <div className="bg-muted p-3 rounded-lg border border-border">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IBAN Numarası</p>
-                    <p className="font-mono font-bold text-foreground sm:text-lg break-all">
-                      {bankInfo.iban || "TR00 0000 0000 0000 0000 0000 00"}
-                    </p>
-                  </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                              <Building className="w-5 h-5 opacity-0" />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alıcı Adı / Ünvanı</p>
+                              <p className="font-bold text-foreground text-sm sm:text-base">{bank.accountName || "Alıcı bilgisi yok"}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-muted p-3 rounded-lg border border-border">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IBAN Numarası</p>
+                          <p className="font-mono font-bold text-foreground sm:text-lg break-all">
+                            {bank.iban || "IBAN bilgisi yok"}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-5 bg-background border border-border rounded-xl text-center text-muted-foreground">
+                      Banka bilgileri yüklenemedi. Lütfen yönetici ile iletişime geçin.
+                    </div>
+                  )}
                 </div>
               </div>
 

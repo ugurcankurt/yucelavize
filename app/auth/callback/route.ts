@@ -27,7 +27,7 @@ export async function GET(request: Request) {
         
         try {
           await resend.emails.send({
-            from: "Yücel Avize <info@yucelavize.com>",
+            from: "Yücel Avize <siparis@yucelavize.com>",
             to: [user.email],
             subject: "Yücel Avize'ye Hoş Geldiniz!",
             react: WelcomeEmail({ customerName: fullName }) as React.ReactElement,

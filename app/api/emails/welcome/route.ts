@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "Yücel Avize <info@yucelavize.com>",
+      from: "Yücel Avize <siparis@yucelavize.com>",
       to: [email],
       subject: "Yücel Avize'ye Hoş Geldiniz!",
       react: WelcomeEmail({ customerName: name || email.split('@')[0] }) as React.ReactElement,

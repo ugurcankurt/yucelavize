@@ -28,6 +28,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    // Fetch bank info
+    const { data: bankSettings } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "bank_info")
+      .single();
+
+    let banks: any[] = [];
+    if (bankSettings?.value) {
+      if (Array.isArray(bankSettings.value)) {
+        banks = bankSettings.value;
+      } else {
+        banks = [bankSettings.value];
+      }
+    }
+
     const fromEmail = "siparis@yucelavize.com";
     const adminEmail = "siparis@yucelavize.com";
 
@@ -42,6 +58,8 @@ export async function POST(request: Request) {
         totalAmount: order.total_amount,
         couponCode: order.coupon_code,
         discountTotal: order.discount_total,
+        paymentMethod: order.payment_method,
+        banks: banks,
       }),
     });
 
