@@ -18,8 +18,8 @@ export default function CustomerLoginPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
-    // Set a cookie so the callback route knows where to redirect
-    document.cookie = `next-redirect=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=Lax`;
+    const isSecure = window.location.protocol === 'https:';
+    document.cookie = `next-redirect=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=${isSecure ? 'None; Secure' : 'Lax'}`;
     // Fallback bulletproof redirect using localStorage
     window.localStorage.setItem("next-redirect", nextUrl);
     

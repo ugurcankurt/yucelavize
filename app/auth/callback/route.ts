@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const cookieStore = await cookies()
   const cookieNext = cookieStore.get('next-redirect')?.value
   // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? cookieNext ?? '/'
+  const next = searchParams.get('next') ?? cookieNext
 
   if (code) {
     const supabase = await createClient()
@@ -43,11 +43,11 @@ export async function GET(request: Request) {
       const isLocalEnv = process.env.NODE_ENV === 'development'
       
       if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${next ?? '/auth/sync'}`)
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${next ?? '/auth/sync'}`)
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${next ?? '/auth/sync'}`)
       }
     }
   }
