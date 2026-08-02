@@ -1,7 +1,17 @@
-import { Heading, Hr, Section, Text } from "@react-email/components";
+import { Heading, Hr, Section, Text, Img } from "@react-email/components";
 import * as React from "react";
 import { BaseEmailLayout } from "./base-email-layout";
 import { sharedStyles } from "./shared-styles";
+
+interface OrderItem {
+  id?: string;
+  quantity: number;
+  unit_price: number;
+  product?: {
+    name: string;
+    images?: string[];
+  };
+}
 
 interface OrderConfirmationEmailProps {
   orderId: string;
@@ -11,6 +21,7 @@ interface OrderConfirmationEmailProps {
   discountTotal?: number | null;
   paymentMethod?: string;
   banks?: any[];
+  items?: OrderItem[];
 }
 
 export const OrderConfirmationEmail = ({
@@ -21,6 +32,7 @@ export const OrderConfirmationEmail = ({
   discountTotal,
   paymentMethod,
   banks = [],
+  items = [],
 }: OrderConfirmationEmailProps) => {
   const shortOrderId = orderId.split("-")[0].toUpperCase();
   const subTotal = totalAmount + (discountTotal || 0);
@@ -34,6 +46,50 @@ export const OrderConfirmationEmail = ({
       
       <Section style={sharedStyles.sectionStorefront}>
         <Text style={sharedStyles.strongStorefront}>Sipariş Özeti</Text>
+        
+        {items && items.length > 0 && (
+          <div style={{ marginBottom: "20px" }}>
+            {items.map((item, index) => {
+              const imageUrl = item.product?.images?.[0] || "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=200&auto=format&fit=crop";
+              const productName = item.product?.name || "İsimsiz Ürün";
+              const isLast = index === items.length - 1;
+              
+              return (
+                <div key={index} style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  marginBottom: isLast ? "0" : "12px", 
+                  borderBottom: isLast ? "none" : "1px solid #99f6e4", 
+                  paddingBottom: isLast ? "0" : "12px" 
+                }}>
+                  <div style={{ flexShrink: 0, marginRight: "16px" }}>
+                    <Img 
+                      src={imageUrl} 
+                      alt={productName} 
+                      width="60" 
+                      height="60" 
+                      style={{ objectFit: "cover", borderRadius: "8px", border: "1px solid #e4e4e7" }} 
+                    />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={{ margin: "0", fontSize: "14px", fontWeight: "bold", color: "#18181b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {productName}
+                    </Text>
+                    <Text style={{ margin: "4px 0 0", fontSize: "12px", color: "#71717a" }}>
+                      {item.quantity} adet x ₺{(item.unit_price).toLocaleString("tr-TR")}
+                    </Text>
+                  </div>
+                  <div style={{ flexShrink: 0, textAlign: "right", paddingLeft: "12px" }}>
+                    <Text style={{ margin: "0", fontSize: "14px", fontWeight: "bold", color: "#18181b" }}>
+                      ₺{(item.unit_price * item.quantity).toLocaleString("tr-TR")}
+                    </Text>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <Hr style={sharedStyles.sectionHrStorefront} />
         <Text style={sharedStyles.textRow}>
           <span style={sharedStyles.label}>Sipariş Numarası:</span> 

@@ -19,7 +19,13 @@ export async function POST(request: Request) {
     // To be safe, if we had a service role key we'd use it, but standard client is fine for now
     const { data: order, error } = await supabase
       .from("orders")
-      .select("*")
+      .select(`
+        *,
+        order_items (
+          *,
+          product:products (*)
+        )
+      `)
       .eq("id", orderId)
       .single();
 
@@ -60,6 +66,7 @@ export async function POST(request: Request) {
         discountTotal: order.discount_total,
         paymentMethod: order.payment_method,
         banks: banks,
+        items: order.order_items || [],
       }),
     });
 
@@ -75,6 +82,7 @@ export async function POST(request: Request) {
         totalAmount: order.total_amount,
         couponCode: order.coupon_code,
         discountTotal: order.discount_total,
+        items: order.order_items || [],
       }),
     });
 
