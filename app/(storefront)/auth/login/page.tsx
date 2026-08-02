@@ -18,12 +18,11 @@ export default function CustomerLoginPage() {
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
-    document.cookie = `next-redirect=${nextUrl}; path=/; max-age=300; SameSite=Lax`;
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
       },
     });
   }
