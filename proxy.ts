@@ -2,6 +2,16 @@ import { type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
+  // If Supabase falls back to the Site URL (homepage) but passes a PKCE code,
+  // we intercept it before the homepage renders and send it to our callback route.
+  // This eliminates the "homepage flicker" completely.
+  if (request.nextUrl.pathname === '/' && request.nextUrl.searchParams.has('code')) {
+    const code = request.nextUrl.searchParams.get('code');
+    // Redirect to the actual callback route
+    const redirectUrl = new URL(`/auth/callback?code=${code}`, request.url);
+    return Response.redirect(redirectUrl);
+  }
+
   return await updateSession(request);
 }
 

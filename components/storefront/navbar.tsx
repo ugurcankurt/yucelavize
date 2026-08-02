@@ -49,7 +49,14 @@ export function Navbar({ categories = [] }: NavbarProps) {
         const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
         setProfile(data);
 
-
+        // --- Redirect Catcher Logic ---
+        if (typeof window !== "undefined") {
+          const nextUrl = window.localStorage.getItem("next-redirect");
+          if (nextUrl) {
+            window.localStorage.removeItem("next-redirect");
+            router.push(nextUrl);
+          }
+        }
       } else {
         setUser(null);
         setProfile(null);
@@ -64,7 +71,14 @@ export function Navbar({ categories = [] }: NavbarProps) {
           const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
           setProfile(data);
 
-
+          // --- Redirect Catcher Logic (Auth State Change) ---
+          if (typeof window !== "undefined") {
+            const nextUrl = window.localStorage.getItem("next-redirect");
+            if (nextUrl) {
+              window.localStorage.removeItem("next-redirect");
+              router.push(nextUrl);
+            }
+          }
         } else {
           setUser(null);
           setProfile(null);
