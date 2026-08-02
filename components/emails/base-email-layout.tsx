@@ -31,12 +31,25 @@ export const BaseEmailLayout = ({ previewText, theme = "storefront", children }:
       <Body style={sharedStyles.main}>
         <Container style={sharedStyles.container}>
           <Section style={headerStyle}>
-            <Img 
-              src={`${baseUrl}/yucel_avize_white_logo.png`} 
-              width="150" 
-              alt="Yücel Avize Logo" 
-              style={{ margin: "0 auto" }} 
-            />
+            <div style={{ textAlign: "center", padding: "10px 0" }}>
+              <Img 
+                src={`${baseUrl}/yucel_avize_white_logo.png`} 
+                width="120" 
+                alt="Yücel Avize Logo" 
+                style={{ margin: "0 auto", display: "block" }} 
+              />
+              <div style={{ 
+                color: "#ffffff", 
+                fontSize: "28px", 
+                fontWeight: "900", 
+                letterSpacing: "-1px", 
+                lineHeight: "1",
+                marginTop: "4px",
+                fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+              }}>
+                yücelavize
+              </div>
+            </div>
           </Section>
           <Section style={sharedStyles.content}>
             {children}
