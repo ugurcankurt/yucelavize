@@ -61,7 +61,7 @@ function RemoveItemDialog({
 }) {
   if (!item) return null;
 
-  const ProductPreview = () => (
+  const productPreviewNode = (
     <div className="flex gap-4 p-4 mt-6 mb-2 border border-border rounded-2xl bg-muted/30 shadow-sm items-center text-left">
       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white border border-border shrink-0">
         {item.product.images?.[0] ? (
@@ -91,7 +91,7 @@ function RemoveItemDialog({
           <DrawerHeader className="text-center sm:text-center mt-2 px-0 border-0">
             {" "}
             <DrawerTitle className="text-xl font-bold flex justify-center text-foreground">Sepetten Çıkar?</DrawerTitle>{" "}
-            <ProductPreview />
+            {productPreviewNode}
           </DrawerHeader>{" "}
           <div className="flex gap-3 pt-6 w-full">
             {" "}
@@ -122,7 +122,7 @@ function RemoveItemDialog({
           {" "}
           <AlertDialogTitle className="text-xl font-bold text-center text-foreground">Sepetten Çıkar?</AlertDialogTitle>{" "}
           <AlertDialogDescription className="sr-only">Bu ürünü sepetinizden kaldırmak istediğinize emin misiniz?</AlertDialogDescription>{" "}
-          <ProductPreview />
+          {productPreviewNode}
         </AlertDialogHeader>{" "}
         <AlertDialogFooter className="flex-row gap-3 pt-4 sm:justify-center w-full">
           {" "}

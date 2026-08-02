@@ -90,7 +90,7 @@ export function Navbar({ categories = [] }: NavbarProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   const loginUrl = pathname ? `/auth/login?next=${pathname}` : `/auth/login`;
 
