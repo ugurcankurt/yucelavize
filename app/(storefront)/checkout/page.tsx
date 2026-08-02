@@ -646,51 +646,24 @@ export default function CheckoutPage() {
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Lütfen toplam sipariş tutarını aşağıdaki banka hesabımıza gönderiniz. Açıklama kısmına <span className="font-bold text-foreground">siparişinizi oluşturduğunuz İsim ve Soyisimi</span> yazmayı unutmayınız. Ödemeniz onaylandıktan sonra siparişiniz hazırlanacaktır.
+                      Siparişinizi tamamladıktan sonra banka hesap bilgilerimiz (IBAN) kayıtlı e-posta adresinize gönderilecektir. Ödemeniz onaylandıktan sonra siparişiniz hazırlanacaktır.
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {banks.length > 0 ? (
-                    banks.map((bank, idx) => (
-                      <div key={idx} className="p-5 bg-background border border-border rounded-xl space-y-4 shadow-sm">
-                        <div className="flex flex-col gap-4 mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                              <Building className="w-5 h-5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Banka Adı</p>
-                              <p className="font-bold text-foreground text-sm sm:text-base">{bank.bankName || "Banka bilgisi yok"}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                              <Building className="w-5 h-5 opacity-0" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alıcı Adı / Ünvanı</p>
-                              <p className="font-bold text-foreground text-sm sm:text-base">{bank.accountName || "Alıcı bilgisi yok"}</p>
-                            </div>
-                          </div>
+                {banks.length > 0 && (
+                  <div className="p-5 bg-background border border-border rounded-xl space-y-3 shadow-sm">
+                    <p className="text-sm font-semibold text-foreground mb-2">Anlaşmalı Olduğumuz Bankalar:</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {banks.map((bank, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border">
+                          <Building className="w-4 h-4 text-primary shrink-0" />
+                          <span className="text-sm font-medium">{bank.bankName || "Banka"}</span>
                         </div>
-
-                        <div className="bg-muted p-3 rounded-lg border border-border">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">IBAN Numarası</p>
-                          <p className="font-mono font-bold text-foreground sm:text-lg break-all">
-                            {bank.iban || "IBAN bilgisi yok"}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-5 bg-background border border-border rounded-xl text-center text-muted-foreground">
-                      Banka bilgileri yüklenemedi. Lütfen yönetici ile iletişime geçin.
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               <Button
