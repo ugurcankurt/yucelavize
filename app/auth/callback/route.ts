@@ -26,19 +26,17 @@ export async function GET(request: Request) {
       const isNewUser = (now - createdAt) < 30000;
       
       if (isNewUser && user.email) {
-        // Send welcome email
+        // Send welcome email asynchronously so it doesn't block the redirect
         const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
         
-        try {
-          await resend.emails.send({
-            from: "Yücel Avize <siparis@yucelavize.com>",
-            to: [user.email],
-            subject: "Yücel Avize'ye Hoş Geldiniz!",
-            react: WelcomeEmail({ customerName: fullName }) as React.ReactElement,
-          });
-        } catch (emailError) {
+        resend.emails.send({
+          from: "Yücel Avize <siparis@yucelavize.com>",
+          to: [user.email],
+          subject: "Yücel Avize'ye Hoş Geldiniz!",
+          react: WelcomeEmail({ customerName: fullName }) as React.ReactElement,
+        }).catch((emailError) => {
           console.error("Welcome email could not be sent:", emailError);
-        }
+        });
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host')
