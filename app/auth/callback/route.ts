@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { resend } from '@/lib/resend'
@@ -26,16 +26,20 @@ export async function GET(request: Request) {
       const isNewUser = (now - createdAt) < 30000;
       
       if (isNewUser && user.email) {
-        // Send welcome email asynchronously so it doesn't block the redirect
-        const fullName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0];
+        // Next.js 15/16 mimarisine uygun olarak, redirect'i geciktirmemek için
+        // işlemi arka plana (after) alıyoruz.
+        const userEmail = user.email;
+        const fullName = user.user_metadata?.full_name || user.user_metadata?.name || userEmail.split('@')[0];
         
-        resend.emails.send({
-          from: "Yücel Avize <siparis@yucelavize.com>",
-          to: [user.email],
-          subject: "Yücel Avize'ye Hoş Geldiniz!",
-          react: WelcomeEmail({ customerName: fullName }) as React.ReactElement,
-        }).catch((emailError) => {
-          console.error("Welcome email could not be sent:", emailError);
+        after(async () => {
+          await resend.emails.send({
+            from: "Yücel Avize <siparis@yucelavize.com>",
+            to: [userEmail],
+            subject: "Yücel Avize'ye Hoş Geldiniz!",
+            react: WelcomeEmail({ customerName: fullName }) as React.ReactElement,
+          }).catch((emailError: unknown) => {
+            console.error("Welcome email could not be sent:", emailError);
+          });
         });
       }
 
