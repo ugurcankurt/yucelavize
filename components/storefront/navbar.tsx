@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { CartIcon } from "@/components/storefront/cart-icon";
 import { UserAvatar } from "@/components/storefront/user-avatar";
-import { logout } from "@/app/actions/auth";
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -101,6 +101,13 @@ export function Navbar({ categories = [] }: NavbarProps) {
   const categoryLabel = currentCategory
     ? currentCategory.name
     : "Tüm Kategoriler";
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+    router.refresh();
+  };
 
   // Close mobile search on scroll with a grace period to prevent instant closing due to layout shifts
   useEffect(() => {
@@ -261,17 +268,14 @@ export function Navbar({ categories = [] }: NavbarProps) {
                     </DropdownMenuItem>{" "}
                   </Link>{" "}
                   <DropdownMenuSeparator className="my-2 bg-muted" />{" "}
-                  <form action={logout}>
+                  <button onClick={handleLogout} className="w-full">
                     {" "}
-                    <button type="submit" className="w-full">
+                    <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive">
                       {" "}
-                      <DropdownMenuItem className="cursor-pointer rounded-xl py-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive">
-                        {" "}
-                        <LogOut className="mr-2 h-4 w-4" />{" "}
-                        <span className="font-medium">Çıkış Yap</span>{" "}
-                      </DropdownMenuItem>{" "}
-                    </button>{" "}
-                  </form>{" "}
+                      <LogOut className="mr-2 h-4 w-4" />{" "}
+                      <span className="font-medium">Çıkış Yap</span>{" "}
+                    </DropdownMenuItem>{" "}
+                  </button>{" "}
                 </DropdownMenuContent>{" "}
               </DropdownMenu>
             ) : (

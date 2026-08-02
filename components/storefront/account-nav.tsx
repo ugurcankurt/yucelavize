@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Package, Heart, MapPin, Settings, LogOut, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { logout } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const navItems = [
   {
@@ -32,7 +33,16 @@ const navItems = [
 
 export function AccountNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    setIsMobileMenuOpen(false);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+    router.refresh();
+  };
 
   // Determine active item
   const activeItem = navItems.find(
@@ -86,15 +96,13 @@ export function AccountNav() {
             })}
             
             <div className="pt-1 mt-1 border-t border-border/40">
-              <form action={logout} onSubmit={() => setIsMobileMenuOpen(false)}>
-                <button
-                  type="submit"
-                  className="w-full group flex items-center gap-3 px-4 py-3 font-semibold rounded-xl transition-all text-destructive hover:bg-destructive/10"
-                >
-                  <LogOut className="w-5 h-5 transition-transform group-hover:scale-110" />
-                  <span>Çıkış Yap</span>
-                </button>
-              </form>
+              <button
+                onClick={handleLogout}
+                className="w-full group flex items-center gap-3 px-4 py-3 font-semibold rounded-xl transition-all text-destructive hover:bg-destructive/10"
+              >
+                <LogOut className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span>Çıkış Yap</span>
+              </button>
             </div>
           </div>
         </div>
@@ -125,15 +133,13 @@ export function AccountNav() {
         
         {/* Logout Button */}
         <div className="pt-2 mt-2 border-t border-border/40">
-          <form action={logout}>
-            <button
-              type="submit"
-              className="w-full group flex items-center gap-3 px-4 py-3.5 font-semibold rounded-2xl transition-all text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="w-5 h-5 transition-transform group-hover:scale-110" />
-              <span>Çıkış Yap</span>
-            </button>
-          </form>
+          <button
+            onClick={handleLogout}
+            className="w-full group flex items-center gap-3 px-4 py-3.5 font-semibold rounded-2xl transition-all text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <span>Çıkış Yap</span>
+          </button>
         </div>
       </div>
     </>
