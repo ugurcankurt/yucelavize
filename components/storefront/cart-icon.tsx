@@ -87,7 +87,7 @@ function RemoveItemDialog({
           {" "}
           <Trash2 className="w-4 h-4" />{" "}
         </DrawerTrigger>{" "}
-        <DrawerContent className="z-[60] rounded-t-[32px] rounded-b-none px-4 pb-8 h-auto bg-background border-none shadow-2xl !m-0 !max-w-none w-full [--drawer-inset:0px]">
+        <DrawerContent className="z-[60] rounded-t-[32px] rounded-b-none px-4 pb-8 h-auto bg-background border-none !m-0 !max-w-none w-full [--drawer-inset:0px]">
           {" "}
           <DrawerHeader className="text-center sm:text-center mt-2 px-0 border-0">
             {" "}
