@@ -53,20 +53,28 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Organization",
+              "@type": "Store",
               "name": "Yücel Avize",
               "url": "https://yucelavize.com",
               "logo": "https://yucelavize.com/logo.png",
+              "image": "https://yucelavize.com/og-default.jpg",
+              "description": "Türkiye'nin lüks ve premium avize mağazası. En şık, modern ve klasik avize modelleri.",
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "TR"
+              },
               "contactPoint": {
                 "@type": "ContactPoint",
                 "telephone": "+90-555-000-0000",
-                "contactType": "customer service"
+                "contactType": "customer service",
+                "areaServed": "TR",
+                "availableLanguage": "Turkish"
               },
               "sameAs": [
                 "https://instagram.com/yucelavize",
                 "https://facebook.com/yucelavize"
               ]
-            })
+            }).replace(/</g, '\\u003c')
           }}
         />
         {children}

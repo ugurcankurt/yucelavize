@@ -45,6 +45,11 @@ export async function generateMetadata(
       title,
       description,
     },
+    alternates: {
+      canonical: categorySlug 
+        ? `https://yucelavize.com/products?category=${categorySlug}`
+        : `https://yucelavize.com/products`,
+    },
   };
 }
 export default async function ProductsPage({
@@ -150,7 +155,7 @@ export default async function ProductsPage({
     <div className="w-full bg-background font-sans min-h-screen">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
       <PageHero
         title={pageTitle}

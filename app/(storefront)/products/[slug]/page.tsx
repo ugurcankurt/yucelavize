@@ -49,6 +49,9 @@ export async function generateMetadata({
       images: [{ url: primaryImage }],
       type: "website",
     },
+    alternates: {
+      canonical: `https://yucelavize.com/products/${resolvedParams.slug}`,
+    },
   };
 }
 export default async function ProductDetailPage({
@@ -207,6 +210,9 @@ export default async function ProductDetailPage({
     }));
   }
 
+  const validUntil = new Date();
+  validUntil.setFullYear(validUntil.getFullYear() + 1); // Valid for 1 year from now
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -220,8 +226,13 @@ export default async function ProductDetailPage({
       url: `https://yucelavize.com/products/${product.slug}`,
       priceCurrency: "TRY",
       price: finalPrice,
+      priceValidUntil: validUntil.toISOString().split('T')[0],
       itemCondition: "https://schema.org/NewCondition",
       availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "Yücel Avize"
+      }
     },
     ...(aggregateRating ? { aggregateRating } : {}),
     ...(jsonLdReviews ? { review: jsonLdReviews } : {})
@@ -238,7 +249,7 @@ export default async function ProductDetailPage({
       {" "}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />{" "}
       <div className="w-full pb-8 lg:pb-8">
         {/* Breadcrumb Navigation - Desktop Only */}
