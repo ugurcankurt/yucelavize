@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/toast";
 import { useFavorites } from "@/hooks/use-favorites";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 interface FavoriteButtonProps {
   productId: string;
@@ -59,6 +60,10 @@ export function FavoriteButton({
       toggleFavoriteLocal(productId);
       
       if (result.isFavorite) {
+        trackMetaEvent("AddToWishlist", {
+          content_ids: [productId],
+          content_type: "product",
+        });
         toast.add({
           title: "Favorilere Eklendi",
           description: "Ürün favori listenize eklendi.",
