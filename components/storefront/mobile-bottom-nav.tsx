@@ -13,6 +13,7 @@ export function MobileBottomNav() {
   const searchParams = useSearchParams();
   const { product, variations } = useProductStore();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
 
   const navItems = [
     { name: "Home", href: "/", icon: Home },
@@ -26,6 +27,22 @@ export function MobileBottomNav() {
   useEffect(() => {
     setIsExpanded(false);
   }, [pathname]);
+
+  // Track scroll position to hide when at the bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const bottomPosition = document.documentElement.scrollHeight;
+      
+      // Hide if within 50px of the bottom (usually the footer area)
+      setIsAtBottom(scrollPosition >= bottomPosition - 50);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isProductPage = pathname.match(/^\/products\/[^/]+$/);
 
@@ -54,9 +71,9 @@ export function MobileBottomNav() {
         )}
         
         <div 
-          className={`lg:hidden fixed left-1/2 -translate-x-1/2 w-[90%] max-w-sm rounded-[24px] shadow-2xl z-40 overflow-hidden cursor-pointer transition-colors duration-300 bg-primary text-primary-foreground ${
+          className={`lg:hidden fixed left-1/2 -translate-x-1/2 w-[90%] max-w-sm rounded-[24px] shadow-2xl z-40 overflow-hidden cursor-pointer transition-all duration-300 bg-primary text-primary-foreground ${
             isProductPage && isExpanded ? "bottom-6 p-4 flex-col flex" : "bottom-6 h-16"
-          }`}
+          } ${isAtBottom ? "translate-y-32 opacity-0 pointer-events-none" : "translate-y-0 opacity-100"}`}
           onClick={() => {
             if (isProductPage && !isExpanded && product) setIsExpanded(true);
           }}

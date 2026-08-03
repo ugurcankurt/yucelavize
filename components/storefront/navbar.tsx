@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { CartIcon } from "@/components/storefront/cart-icon";
 import { UserAvatar } from "@/components/storefront/user-avatar";
+import { cn } from "@/lib/utils";
 
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -147,6 +149,17 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <header className="w-full flex flex-col font-sans sticky top-0 z-50 lg:shadow-sm lg:bg-background">
       {/* Main Navbar (Desktop) */}
@@ -154,11 +167,21 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-6">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <Image src="/yucel_avize_logo.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
-              <span className="text-xl md:text-[22px] tracking-[0.2em] text-primary uppercase">
-                YÜCEL AVİZE
-              </span>
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0 relative z-20 group">
+              <div className={cn(
+                "relative z-20 bg-background lg:bg-transparent flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                isScrolled ? "scale-[1.35]" : "scale-100"
+              )}>
+                <Image src="/yucel_avize_logo.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
+              </div>
+              <div className={cn(
+                "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden relative z-10 flex items-center",
+                isScrolled ? "max-w-0 opacity-0 -translate-x-12" : "max-w-[250px] opacity-100 translate-x-0"
+              )}>
+                <span className="text-xl md:text-[22px] tracking-[0.2em] text-primary uppercase whitespace-nowrap">
+                  YÜCEL AVİZE
+                </span>
+              </div>
             </Link>
 
             {/* Nav Links */}
@@ -408,11 +431,21 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
       <div className="lg:hidden flex flex-col w-full bg-primary text-primary-foreground rounded-b-[24px] pt-3 pb-3 px-4 shadow-md relative z-20 transition-all duration-300">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <Image src="/yucel_avize_logo_white.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
-            <span className="text-xl md:text-[22px] tracking-[0.2em] text-white uppercase">
-              YÜCEL AVİZE
-            </span>
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 relative z-20 group">
+            <div className={cn(
+              "relative z-20 flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              isScrolled ? "scale-[1.32]" : "scale-100"
+            )}>
+              <Image src="/yucel_avize_logo_white.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
+            </div>
+            <div className={cn(
+              "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden relative z-10 flex items-center",
+              isScrolled ? "max-w-0 opacity-0 -translate-x-8" : "max-w-[250px] opacity-100 translate-x-0"
+            )}>
+              <span className="text-xl md:text-[22px] tracking-[0.2em] text-white uppercase whitespace-nowrap">
+                YÜCEL AVİZE
+              </span>
+            </div>
           </Link>
 
           {/* Actions (Search Toggle, Cart) */}
