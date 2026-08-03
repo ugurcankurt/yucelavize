@@ -2,11 +2,12 @@ import {
   Body,
   Container,
   Head,
-  Heading,
   Html,
   Preview,
   Section,
-  Img
+  Img,
+  Row,
+  Column,
 } from "@react-email/components";
 import * as React from "react";
 import { sharedStyles } from "./shared-styles";
@@ -31,24 +32,35 @@ export const BaseEmailLayout = ({ previewText, theme = "storefront", children }:
       <Body style={sharedStyles.main}>
         <Container style={sharedStyles.container}>
           <Section style={headerStyle}>
-            <div style={{ textAlign: "center", padding: "10px 0" }}>
-              <Img 
-                src={`${baseUrl}/yucel_avize_white_logo.png`} 
-                width="120" 
-                alt="Yücel Avize Logo" 
-                style={{ margin: "0 auto", display: "block" }} 
-              />
-              <div style={{ 
-                color: "#ffffff", 
-                fontSize: "28px", 
-                fontWeight: "900", 
-                letterSpacing: "-1px", 
-                lineHeight: "1",
-                marginTop: "4px",
-                fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-              }}>
-                yücelavize
-              </div>
+            <div style={{ padding: "10px 0" }}>
+              <table align="center" border={0} cellPadding="0" cellSpacing="0" role="presentation" style={{ margin: "0 auto" }}>
+                <tbody>
+                  <tr>
+                    <td style={{ verticalAlign: "middle", paddingRight: "16px" }}>
+                      <Img 
+                        src={`${baseUrl}/yucel_avize_logo_white.webp`} 
+                        width="62" 
+                        height="62"
+                        alt="Yücel Avize Logo" 
+                        style={{ display: "block" }} 
+                      />
+                    </td>
+                    <td style={{ verticalAlign: "middle" }}>
+                      <div style={{ 
+                        color: "#ffffff", 
+                        fontSize: "22px", 
+                        fontWeight: "900", 
+                        letterSpacing: "0.2em",
+                        lineHeight: "1",
+                        textTransform: "uppercase",
+                        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                      }}>
+                        YÜCEL AVİZE
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </Section>
           <Section style={sharedStyles.content}>
