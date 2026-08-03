@@ -81,7 +81,7 @@ function RemoveItemDialog({
 
   if (isMobile) {
     return (
-      <Drawer swipeDirection="up" open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange}>
         {" "}
         <DrawerTrigger render={<button className="text-muted-foreground hover:text-destructive transition-colors p-1" />}>
           {" "}
