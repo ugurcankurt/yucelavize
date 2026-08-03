@@ -27,10 +27,8 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { SearchBar } from "./search-bar";
 
@@ -156,8 +154,11 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-6">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-36 h-12 md:w-44 md:h-18">
-              <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain" priority loading="eager" />
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <Image src="/yucel_avize_logo.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
+              <span className="text-xl md:text-[22px] tracking-[0.2em] text-primary uppercase">
+                YÜCEL AVİZE
+              </span>
             </Link>
 
             {/* Nav Links */}
@@ -407,8 +408,11 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
       <div className="lg:hidden flex flex-col w-full bg-primary text-primary-foreground rounded-b-[24px] pt-3 pb-3 px-4 shadow-md relative z-20 transition-all duration-300">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-32 h-14">
-            <Image src="/yucel_avize_white_logo.png" alt="Yücel Avize Logo" fill sizes="150px" className="object-contain scale-110" priority />
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Image src="/yucel_avize_logo_white.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
+            <span className="text-xl md:text-[22px] tracking-[0.2em] text-white uppercase">
+              YÜCEL AVİZE
+            </span>
           </Link>
 
           {/* Actions (Search Toggle, Cart) */}
