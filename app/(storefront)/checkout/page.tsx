@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2, Building, Info, MapPin, Plus, Check } from "lucide-react";
+import { CheckCircle2, Building, Info, MapPin, Plus, Check, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { incrementCouponUsage } from "@/app/actions/coupon";
 import { PageHero } from "@/components/storefront/page-hero";
+import { getCities, getDistricts } from "@/lib/data/turkey";
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -37,6 +38,7 @@ export default function CheckoutPage() {
     lastName: "",
     address: "",
     city: "",
+    district: "",
     zip: "",
     email: "",
     phone: "",
@@ -48,6 +50,7 @@ export default function CheckoutPage() {
     lastName: "",
     address: "",
     city: "",
+    district: "",
     zip: "",
     phone: "",
     title: "Fatura Adresim",
@@ -180,7 +183,7 @@ export default function CheckoutPage() {
           title: formData.title || "Teslimat Adresi",
           full_name: `${formData.firstName} ${formData.lastName}`,
           address_line: formData.address,
-          city: formData.city,
+          city: `${formData.city} / ${formData.district}`,
           zip_code: formData.zip,
           phone: formData.phone || "000"
         }).select().single();
@@ -201,7 +204,7 @@ export default function CheckoutPage() {
           title: billingFormData.title || "Fatura Adresi",
           full_name: `${billingFormData.firstName} ${billingFormData.lastName}`,
           address_line: billingFormData.address,
-          city: billingFormData.city,
+          city: `${billingFormData.city} / ${billingFormData.district}`,
           zip_code: billingFormData.zip,
           phone: billingFormData.phone || "000"
         }).select().single();
@@ -218,13 +221,13 @@ export default function CheckoutPage() {
     const selectedAddress = addresses.find(a => a.id === selectedAddressId);
     const shippingString = user && !isAddingNewAddress
       ? formatAddressString(selectedAddress)
-      : `${formData.title} - ${formData.firstName} ${formData.lastName} - ${formData.address}, ${formData.city} ${formData.zip} - Tel: ${formData.phone}`;
+      : `${formData.title} - ${formData.firstName} ${formData.lastName} - ${formData.address}, ${formData.city} / ${formData.district} ${formData.zip} - Tel: ${formData.phone}`;
 
     let billingString = shippingString;
     if (!useSameAddressForBilling) {
       billingString = user && !isAddingBillingAddress
         ? formatAddressString(addresses.find(a => a.id === selectedBillingAddressId))
-        : `${billingFormData.title} - ${billingFormData.firstName} ${billingFormData.lastName} - ${billingFormData.address}, ${billingFormData.city} ${billingFormData.zip} - Tel: ${billingFormData.phone}`;
+        : `${billingFormData.title} - ${billingFormData.firstName} ${billingFormData.lastName} - ${billingFormData.address}, ${billingFormData.city} / ${billingFormData.district} ${billingFormData.zip} - Tel: ${billingFormData.phone}`;
     }
 
     // Determine correct customer details
@@ -398,25 +401,51 @@ export default function CheckoutPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-muted-foreground font-semibold text-sm">İl / İlçe</Label>
-          <Input
-            value={data.city}
-            onChange={(e) => setData({ ...data, city: e.target.value })}
-            required={required}
-            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-          />
+          <Label className="text-muted-foreground font-semibold text-sm">İl</Label>
+          <div className="relative">
+            <select
+              value={data.city}
+              onChange={(e) => setData({ ...data, city: e.target.value, district: "" })}
+              required={required}
+              className="h-12 w-full appearance-none bg-muted border border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl px-3 text-sm"
+            >
+              <option value="" disabled>İl Seçiniz</option>
+              {getCities().map(c => (
+                <option key={c.plate} value={c.name}>{c.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
         <div className="space-y-2">
-          <Label className="text-muted-foreground font-semibold text-sm">Posta Kodu</Label>
-          <Input
-            value={data.zip}
-            onChange={(e) => setData({ ...data, zip: e.target.value })}
-            required={required}
-            className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
-          />
+          <Label className="text-muted-foreground font-semibold text-sm">İlçe</Label>
+          <div className="relative">
+            <select
+              value={data.district}
+              onChange={(e) => setData({ ...data, district: e.target.value })}
+              required={required}
+              disabled={!data.city}
+              className="h-12 w-full appearance-none bg-muted border border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl px-3 text-sm disabled:opacity-50"
+            >
+              <option value="" disabled>İlçe Seçiniz</option>
+              {data.city && getDistricts(data.city).map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label className="text-muted-foreground font-semibold text-sm">Posta Kodu</Label>
+        <Input
+          value={data.zip}
+          onChange={(e) => setData({ ...data, zip: e.target.value })}
+          required={required}
+          className="h-12 bg-muted border-border focus-visible:ring-primary focus-visible:border-primary rounded-xl"
+        />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { validateCoupon } from "@/app/actions/coupon";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 import {
   Sheet,
   SheetContent,
@@ -152,6 +153,52 @@ export function CartIcon({ className, iconClassName, badgeClassName, hideDrawer 
   const [itemToRemove, setItemToRemove] = useState<any | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [isApplying, setIsApplying] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchRecommendations() {
+      if (cart.items.length === 0) {
+        setRecommendedProducts([]);
+        return;
+      }
+      
+      const supabase = createClient();
+      const productIds = cart.items.map(item => item.product.id);
+      
+      // 1. Find collections of these products
+      const { data: cpRel } = await supabase
+        .from("collection_products")
+        .select("collection_id")
+        .in("product_id", productIds);
+        
+      if (!cpRel || cpRel.length === 0) return;
+      
+      const collectionIds = [...new Set(cpRel.map(c => c.collection_id))];
+      
+      // 2. Fetch products in these collections that are NOT in the cart
+      const { data: recRel } = await supabase
+        .from("collection_products")
+        .select(`
+          product:products (
+            id, name, slug, price, discounted_price, images
+          )
+        `)
+        .in("collection_id", collectionIds);
+        
+      if (!recRel) return;
+      
+      const recProducts = recRel
+        .map(r => r.product as any)
+        .filter((p: any) => p && !productIds.includes(p.id));
+        
+      // Deduplicate products
+      const uniqueProducts = Array.from(new Map(recProducts.map((item: any) => [item.id, item])).values());
+      
+      setRecommendedProducts(uniqueProducts.slice(0, 4));
+    }
+    
+    if (mounted) fetchRecommendations();
+  }, [cart.items, mounted]);
 
   useEffect(() => {
     setMounted(true);
@@ -346,8 +393,49 @@ export function CartIcon({ className, iconClassName, badgeClassName, hideDrawer 
                     </div>{" "}
                   </div>{" "}
                 </div>
-              ))}{" "}
-            </div>{" "}
+              ))} 
+              
+              {/* Çapraz Satış Önerileri */}
+              {recommendedProducts.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-border">
+                  <h4 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+                    Bunlar da İlginizi Çekebilir
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {recommendedProducts.map((rec) => (
+                      <Link 
+                        href={`/products/${rec.slug}`} 
+                        key={rec.id}
+                        className="group flex flex-col bg-background rounded-xl border border-border p-2 hover:border-primary/30 transition-colors"
+                      >
+                        <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted mb-2">
+                          {rec.images?.[0] ? (
+                            <Image 
+                              src={rec.images[0]} 
+                              alt={rec.name} 
+                              fill 
+                              className="object-cover group-hover:scale-105 transition-transform duration-300" 
+                              sizes="120px" 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ShoppingCart className="w-5 h-5 text-muted-foreground/30" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                          {rec.name}
+                        </span>
+                        <span className="text-xs font-bold text-primary mt-1">
+                          ₺{(rec.discounted_price || rec.price).toLocaleString("tr-TR")}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div> 
             <div className={isMobile && !isLandscapeMobile ? "shrink-0 border-t border-border p-6 bg-muted space-y-4 rounded-b-[32px]" : "shrink-0 border-t border-border p-6 bg-muted space-y-4"}>
               
               {/* Coupon Section */}

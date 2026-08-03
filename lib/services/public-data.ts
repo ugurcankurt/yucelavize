@@ -25,6 +25,25 @@ export const getCachedCategories = unstable_cache(
   { revalidate: 3600, tags: ["categories"] }
 );
 
+export const getCachedCollections = unstable_cache(
+  async (limit?: number) => {
+    let query = publicSupabase
+      .from("collections")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+    
+    if (limit) {
+      query = query.limit(limit);
+    }
+    
+    const { data } = await query;
+    return data;
+  },
+  ["public-collections"],
+  { revalidate: 3600, tags: ["collections"] }
+);
+
 export const getCachedNewArrivals = unstable_cache(
   async (limit: number = 4) => {
     const { data } = await publicSupabase

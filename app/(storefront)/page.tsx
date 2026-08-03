@@ -2,36 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Lightbulb,
-  Grid,
-  Package,
   Hexagon,
-  Star,
-  Sun,
-  Box,
   LayoutGrid,
-  ChevronRight,
-  ShieldCheck,
-  Truck,
-  RefreshCw,
 } from "lucide-react";
 import { ProductCard } from "@/components/storefront/product-card";
 import { HeroSlider } from "@/components/storefront/hero-slider";
 import { PhotoReviewsSlider } from "@/components/storefront/photo-reviews-slider";
-import { 
-  getCachedNewArrivals, 
-  getCachedCategories, 
-  getCachedHeroSlides, 
-  getCachedActiveCampaign, 
+import {
+  getCachedNewArrivals,
+  getCachedCategories,
+  getCachedHeroSlides,
+  getCachedActiveCampaign,
   getCachedHomeBanners,
   getCachedBrands,
   getCachedLatestBlogs,
   getCachedPhotoReviews
 } from "@/lib/services/public-data";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function Home() {
   const photoReviews = await getCachedPhotoReviews();
-  
+
   // Use cached data fetching for public entities
   const newArrivals = await getCachedNewArrivals(4);
   const categories = await getCachedCategories(7);
@@ -54,13 +45,13 @@ export default async function Home() {
         <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
           <div className="flex flex-col min-w-[200px] shrink-0">
             <h2 className="text-[26px] font-bold text-foreground tracking-tight mb-2">
-              Koleksiyonlar
+              Kategoriler
             </h2>
             <Link
               href="/categories"
               className="text-primary font-semibold text-sm hover:text-primary/80 transition-colors"
             >
-              Tüm Koleksiyonlar
+              Tüm Kategoriler
             </Link>
           </div>
 
@@ -106,7 +97,7 @@ export default async function Home() {
                   Tüm Ürünler
                 </span>
                 <span className="text-xs md:text-sm text-primary-foreground/80 block mt-0.5 md:mt-1">
-                  Koleksiyonu Gör
+                  Tüm Kategorileri Gör
                 </span>
               </div>
             </Link>
@@ -144,22 +135,22 @@ export default async function Home() {
           {largeBanner && (
             <div className="relative rounded-3xl overflow-hidden bg-primary aspect-[4/3] lg:aspect-auto lg:h-[500px] flex items-center">
               <div className="relative z-10 p-10 max-w-sm">
-                <div className="w-10 h-10 mb-6 text-foreground">
+                <div className="w-10 h-10 mb-6 text-white">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L2 22h20L12 2zm0 4.2l7.1 13.8H4.9L12 6.2z" />
                   </svg>
                 </div>
                 {largeBanner.title && (
                   <h2
-                    className="text-4xl font-black text-foreground leading-[1.1] mb-6"
+                    className="text-4xl font-black text-white leading-[1.1] mb-6"
                     dangerouslySetInnerHTML={{ __html: largeBanner.title }}
                   />
                 )}
                 <Link
-                  href={largeBanner.link_url || "/products"}
-                  className="text-foreground/80 hover:text-foreground font-medium text-sm transition-colors"
+                  href={largeBanner.link_url}
+                  className={buttonVariants({ variant: "secondary", size: "lg", className: "p-5" })}
                 >
-                  {largeBanner.subtitle || "Alışverişe Başla"}
+                  {largeBanner.subtitle}
                 </Link>
               </div>
               {largeBanner.image_url && (
@@ -193,8 +184,8 @@ export default async function Home() {
                   )}
                   {smallBanners[0].button_text && (
                     <Link
-                      href={smallBanners[0].link_url || "/products"}
-                      className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+                      href={smallBanners[0].link_url}
+                      className={buttonVariants({ variant: "default", size: "lg", className: "p-5" })}
                     >
                       {smallBanners[0].button_text}
                     </Link>
@@ -231,7 +222,7 @@ export default async function Home() {
                   {smallBanners[1].button_text && (
                     <Link
                       href={smallBanners[1].link_url || "/products"}
-                      className="inline-flex items-center justify-center h-10 px-6 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+                      className={buttonVariants({ variant: "default", size: "lg", className: "p-5" })}
                     >
                       {smallBanners[1].button_text}
                     </Link>
@@ -324,7 +315,7 @@ export default async function Home() {
                   className="md:col-span-2 relative h-[400px] rounded-3xl overflow-hidden group"
                 >
                   <Image
-                    src={latestBlogs[0].cover_image_url || "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=1200&auto=format&fit=crop"}
+                    src={latestBlogs[0].cover_image_url}
                     alt={latestBlogs[0].title}
                     fill
                     sizes="(max-width: 768px) 100vw, 66vw"
@@ -349,7 +340,7 @@ export default async function Home() {
                   className="relative h-[400px] rounded-3xl overflow-hidden group bg-primary"
                 >
                   <Image
-                    src={latestBlogs[1].cover_image_url || "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=800&auto=format&fit=crop"}
+                    src={latestBlogs[1].cover_image_url}
                     alt={latestBlogs[1].title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"

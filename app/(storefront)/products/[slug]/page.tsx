@@ -114,6 +114,48 @@ export default async function ProductDetailPage({
     .limit(1)
     .maybeSingle();
 
+  // Fetch collection related products
+  const { data: collectionProductsRel } = await supabase
+    .from("collection_products")
+    .select("collection_id")
+    .eq("product_id", product.id)
+    .limit(1)
+    .maybeSingle();
+
+  let collectionRelatedProducts: any[] = [];
+  let collectionName = "";
+
+  if (collectionProductsRel) {
+    const { data: col } = await supabase
+      .from("collections")
+      .select("name")
+      .eq("id", collectionProductsRel.collection_id)
+      .single();
+    if (col) collectionName = col.name;
+
+    const { data: cpData } = await supabase
+      .from("collection_products")
+      .select(`
+        product:products (
+          id,
+          name,
+          slug,
+          price,
+          discounted_price,
+          images,
+          is_featured,
+          category:categories(name)
+        )
+      `)
+      .eq("collection_id", collectionProductsRel.collection_id)
+      .neq("product_id", product.id)
+      .limit(4);
+      
+    if (cpData) {
+      collectionRelatedProducts = cpData.map(cp => cp.product).filter(Boolean);
+    }
+  }
+
   const hasProductDiscount = product.discounted_price && product.discounted_price < product.price;
   let finalPrice = product.price;
   let hasDiscount = false;
@@ -320,6 +362,24 @@ export default async function ProductDetailPage({
             reviews={enrichedReviews} 
           />
         </div>
+
+        {/* Aynı Koleksiyondaki Diğer Ürünler */}
+        {collectionRelatedProducts && collectionRelatedProducts.length > 0 && (
+          <div className="container mx-auto px-4 mt-16 lg:mt-24 border-t border-border pt-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
+              {collectionName} Koleksiyonundan
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {collectionRelatedProducts.map((cpProduct: any) => (
+                <ProductCard
+                  key={cpProduct.id}
+                  product={cpProduct}
+                  activeCampaign={activeCampaign}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Benzer Ürünler */}
         {relatedProducts && relatedProducts.length > 0 && (

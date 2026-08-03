@@ -53,9 +53,9 @@ export function SlideForm({ initialData }: SlideFormProps) {
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
-          .from('product-images') 
+          .from('product-images')
           .upload(`slides/${fileName}`, imageFile);
 
         if (uploadError) throw uploadError;
@@ -63,7 +63,7 @@ export function SlideForm({ initialData }: SlideFormProps) {
         const { data: publicUrlData } = supabase.storage
           .from('product-images')
           .getPublicUrl(`slides/${fileName}`);
-          
+
         finalImageUrl = publicUrlData.publicUrl;
       }
 
@@ -127,8 +127,8 @@ export function SlideForm({ initialData }: SlideFormProps) {
       <div className="space-y-2">
         <Label>Slayt Görseli (Masaüstü için yatay, yüksek çözünürlük önerilir)</Label>
         <div className="flex items-center gap-4">
-          <label 
-            htmlFor="image_upload" 
+          <label
+            htmlFor="image_upload"
             className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-muted hover:bg-muted/80 transition-colors relative overflow-hidden"
           >
             {imagePreview ? (
@@ -139,11 +139,11 @@ export function SlideForm({ initialData }: SlideFormProps) {
                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Yüklemek için tıklayın</span></p>
               </div>
             )}
-            <input 
-              id="image_upload" 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
+            <input
+              id="image_upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
               onChange={handleImageChange}
             />
           </label>
@@ -178,7 +178,7 @@ export function SlideForm({ initialData }: SlideFormProps) {
             id="button_text"
             name="button_text"
             defaultValue={initialData?.button_text}
-            placeholder="Örn: Koleksiyonu Gör"
+            placeholder="Örn: Kategorileri Gör"
           />
         </div>
         <div className="space-y-2">

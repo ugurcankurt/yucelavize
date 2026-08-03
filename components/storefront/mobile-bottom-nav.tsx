@@ -18,7 +18,7 @@ export function MobileBottomNav() {
     { name: "Home", href: "/", icon: Home },
     { name: "Shop", href: "/products", icon: ShoppingBag },
     { name: "Favorites", href: "/account/favorites", icon: Heart },
-    { name: "Koleksiyonlar", href: "/categories", icon: LayoutGrid }, 
+    { name: "Kategoriler", href: "/categories", icon: LayoutGrid }, 
     { name: "Profile", href: "/account", icon: User },
   ];
 

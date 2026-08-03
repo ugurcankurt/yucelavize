@@ -64,9 +64,19 @@ export default async function ProductsPage({
     resolvedSearchParams.search &&
     typeof resolvedSearchParams.search === "string"
   ) {
-    query = query.or(
-      `name.ilike.%${resolvedSearchParams.search}%,description.ilike.%${resolvedSearchParams.search}%`,
-    );
+    const term = resolvedSearchParams.search;
+    const { data: matchedCategories } = await supabase
+      .from("categories")
+      .select("id")
+      .ilike("name", `%${term}%`);
+      
+    const categoryIds = matchedCategories?.map(c => c.id) || [];
+    let orQuery = `name.ilike.%${term}%,description.ilike.%${term}%`;
+    if (categoryIds.length > 0) {
+      orQuery += `,category_id.in.(${categoryIds.join(",")})`;
+    }
+    
+    query = query.or(orQuery);
   }
   if (
     resolvedSearchParams.category &&

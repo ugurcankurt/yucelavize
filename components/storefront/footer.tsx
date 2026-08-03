@@ -63,17 +63,7 @@ export function Footer() {
         <div className="lg:col-span-2 flex flex-col">
           {" "}
           <Link href="/" className="relative flex items-center justify-start flex-shrink-0 w-36 h-12 md:w-44 md:h-14 mb-6">
-            <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain object-left z-0" />
-            <div className="absolute inset-0 flex items-center justify-start pl-2 text-[24px] md:text-[28px] font-black tracking-tighter leading-none">
-              <div className="relative">
-                <span aria-hidden="true" className="absolute inset-0 z-0 text-white [-webkit-text-stroke:6px_#ffffff] pointer-events-none select-none">
-                  yücelavize
-                </span>
-                <span className="relative z-10 text-primary">
-                  yücel<span className="text-foreground">avize</span>
-                </span>
-              </div>
-            </div>
+            <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain object-left z-0" priority loading="eager" />
           </Link>{" "}
           <div className="flex items-center gap-3 mb-8">
             {" "}

@@ -3,7 +3,7 @@ import { Footer } from "@/components/storefront/footer";
 import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav";
 import { Suspense } from "react";
 import { ScrollToTop } from "@/components/storefront/scroll-to-top";
-import { getCachedCategories } from "@/lib/services/public-data";
+import { getCachedCategories, getCachedCollections } from "@/lib/services/public-data";
 import { FavoritesInitializer } from "@/components/storefront/favorites-initializer";
 
 export default async function StorefrontLayout({
@@ -11,7 +11,10 @@ export default async function StorefrontLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const categories = await getCachedCategories();
+  const [categories, collections] = await Promise.all([
+    getCachedCategories(),
+    getCachedCollections()
+  ]);
   
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -19,7 +22,7 @@ export default async function StorefrontLayout({
       <FavoritesInitializer />
       
       <Suspense fallback={<div className="h-20 w-full border-b border-border bg-background" />}>
-        <Navbar categories={categories || []} />
+        <Navbar categories={categories || []} collections={collections || []} />
       </Suspense>
       
       <main className="flex-1 flex flex-col mb-16 lg:mb-0">{children}</main>

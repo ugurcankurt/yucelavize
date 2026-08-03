@@ -16,29 +16,60 @@ interface SearchBarProps {
 export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = false }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [popularProducts, setPopularProducts] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
+  const popularSearches = ["avize", "aplik", "sarkıt"];
+
+  useEffect(() => {
+    async function fetchPopular() {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, slug, price, images")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      if (data) setPopularProducts(data);
+    }
+    fetchPopular();
+  }, [supabase]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (searchQuery.trim().length > 1) {
         setIsSearching(true);
         setShowResults(true);
+        const term = searchQuery.trim();
+        
+        // Find matching categories first
+        const { data: matchedCategories } = await supabase
+          .from("categories")
+          .select("id")
+          .ilike("name", `%${term}%`);
+          
+        const categoryIds = matchedCategories?.map(c => c.id) || [];
+        let orQuery = `name.ilike.%${term}%,description.ilike.%${term}%`;
+        if (categoryIds.length > 0) {
+          orQuery += `,category_id.in.(${categoryIds.join(",")})`;
+        }
+
         const { data, error } = await supabase
           .from("products")
           .select("id, name, slug, price, images")
-          .ilike("name", `%${searchQuery.trim()}%`)
+          .or(orQuery)
           .limit(5);
+          
         if (!error && data) {
           setSearchResults(data);
         }
         setIsSearching(false);
       } else {
         setSearchResults([]);
-        setShowResults(false);
+        // Do not set showResults to false here so we can show popular products
       }
     }, 300);
     return () => clearTimeout(delayDebounceFn);
@@ -67,10 +98,9 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
 
   if (variant === "mobile") {
     return (
-      <div 
-        className={`relative w-full transition-all duration-300 ease-in-out ${
-          isMobileOpen ? "max-h-[500px] opacity-100 mt-3 overflow-visible" : "max-h-0 opacity-0 mt-0 overflow-hidden"
-        }`} 
+      <div
+        className={`relative w-full transition-all duration-300 ease-in-out ${isMobileOpen ? "max-h-[500px] opacity-100 mt-3 overflow-visible" : "max-h-0 opacity-0 mt-0 overflow-hidden"
+          }`}
         ref={searchRef}
       >
         <form
@@ -85,9 +115,7 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => {
-              if (searchQuery.trim().length > 1) setShowResults(true);
-            }}
+            onFocus={() => setShowResults(true)}
             placeholder="Ürün veya marka ara..."
             className="flex-1 h-full bg-transparent outline-none text-[16px] md:text-[14px] text-foreground placeholder:text-muted-foreground ml-3 min-w-0"
           />
@@ -153,9 +181,73 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
                         </Link>
                       </div>
                     </div>
-                  ) : (
+                  ) : searchQuery.trim().length > 1 ? (
                     <div className="p-6 text-center text-sm text-muted-foreground">
                       Sonuç bulunamadı.
+                    </div>
+                  ) : (
+                    <div className="p-4 animate-in fade-in duration-300">
+                      <div className="mb-6">
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                          Popüler Aramalar
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {popularSearches.map((term) => (
+                            <button
+                              type="button"
+                              key={term}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setSearchQuery(term);
+                              }}
+                              className="px-3 py-1.5 bg-muted/50 hover:bg-primary/10 hover:text-primary text-foreground text-[13px] font-medium rounded-full transition-colors border border-border/50 hover:border-primary/20"
+                            >
+                              {term}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {popularProducts.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                            Sizin İçin Seçtiklerimiz
+                          </h4>
+                          <div className="flex flex-col gap-1">
+                            {popularProducts.map((product) => (
+                              <Link
+                                key={product.id}
+                                href={`/products/${product.slug}`}
+                                onClick={() => {
+                                  setShowResults(false);
+                                  if (onMobileClose) onMobileClose();
+                                }}
+                                className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors border border-transparent text-foreground"
+                              >
+                                <div className="w-10 h-10 bg-muted rounded-lg overflow-hidden relative flex-shrink-0">
+                                  {product.images?.[0] && (
+                                    <Image
+                                      src={product.images[0]}
+                                      alt={product.name}
+                                      fill
+                                      className="object-cover"
+                                      sizes="40px"
+                                    />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-medium text-foreground truncate">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-[13px] font-bold text-primary mt-0.5">
+                                    ₺{product.price}
+                                  </p>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -186,9 +278,7 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onFocus={() => {
-            if (searchQuery.trim().length > 1) setShowResults(true);
-          }}
+          onFocus={() => setShowResults(true)}
           placeholder="Ne aramıştınız?"
           className="flex-1 h-full bg-transparent pr-4 outline-none text-[16px] lg:text-[15px] text-foreground placeholder:text-muted-foreground"
         />
@@ -251,9 +341,70 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
                       </Link>
                     </div>
                   </div>
-                ) : (
+                ) : searchQuery.trim().length > 1 ? (
                   <div className="p-6 text-center text-sm text-muted-foreground">
                     Sonuç bulunamadı.
+                  </div>
+                ) : (
+                  <div className="p-6 flex flex-col md:flex-row gap-8 animate-in fade-in duration-300">
+                    <div className="flex-1">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">
+                        Popüler Aramalar
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {popularSearches.map((term) => (
+                          <button
+                            type="button"
+                            key={term}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setSearchQuery(term);
+                            }}
+                            className="px-4 py-2 bg-muted/50 hover:bg-primary/10 hover:text-primary text-foreground text-[14px] font-medium rounded-full transition-colors border border-border/50 hover:border-primary/20"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {popularProducts.length > 0 && (
+                      <div className="flex-1 border-t md:border-t-0 md:border-l border-border/50 pt-6 md:pt-0 md:pl-8">
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">
+                          Sizin İçin Seçtiklerimiz
+                        </h4>
+                        <div className="flex flex-col gap-2">
+                          {popularProducts.map((product) => (
+                            <Link
+                              key={product.id}
+                              href={`/products/${product.slug}`}
+                              onClick={() => setShowResults(false)}
+                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors border border-transparent text-foreground"
+                            >
+                              <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden relative flex-shrink-0">
+                                {product.images?.[0] && (
+                                  <Image
+                                    src={product.images[0]}
+                                    alt={product.name}
+                                    fill
+                                    className="object-cover"
+                                    sizes="48px"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[14px] font-medium text-foreground truncate">
+                                  {product.name}
+                                </p>
+                                <p className="text-[14px] font-bold text-primary mt-0.5">
+                                  ₺{product.price}
+                                </p>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

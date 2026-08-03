@@ -23,14 +23,24 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { SearchBar } from "./search-bar";
 
 import { createClient } from "@/lib/supabase/client";
 
 interface NavbarProps {
   categories?: any[];
+  collections?: any[];
 }
-export function Navbar({ categories = [] }: NavbarProps) {
+export function Navbar({ categories = [], collections = [] }: NavbarProps) {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -146,29 +156,115 @@ export function Navbar({ categories = [] }: NavbarProps) {
         <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4 lg:gap-6">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-36 h-12 md:w-44 md:h-14">
-              <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain z-0" priority />
-              <div className="absolute inset-0 flex items-center justify-center text-[24px] md:text-[28px] font-black tracking-tighter leading-none drop-shadow-sm">
-                <div className="relative">
-                  <span aria-hidden="true" className="absolute inset-0 z-0 text-white [-webkit-text-stroke:3px_#ffffff] pointer-events-none select-none">
-                    yücelavize
-                  </span>
-                  <span className="relative z-10 text-primary">
-                    yücel<span className="text-foreground">avize</span>
-                  </span>
-                </div>
-              </div>
+            <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-36 h-12 md:w-44 md:h-18">
+              <Image src="/yucel_avize_logo.png" alt="Yücel Avize Logo" fill sizes="(max-width: 768px) 150px, 200px" className="object-contain" priority loading="eager" />
             </Link>
 
             {/* Nav Links */}
-            <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-              <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors">
-                Koleksiyonlar
-              </Link>
-              <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors">
-                Blog
-              </Link>
-            </nav>
+            <NavigationMenu className="hidden lg:flex">
+              <NavigationMenuList>
+                {/* Kategoriler Mega Menu */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent focus:bg-transparent text-muted-foreground hover:text-primary transition-colors text-sm font-medium px-4">
+                    Kategoriler
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="w-[600px] p-6">
+                      <div className="grid grid-cols-3 gap-4">
+                        {categories.slice(0, 6).map((category) => (
+                          <Link
+                            key={category.id}
+                            href={`/products?category=${category.slug}`}
+                            className="group block"
+                          >
+                            <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors">
+                              <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                                {category.image_url ? (
+                                  <Image
+                                    src={category.image_url}
+                                    alt={category.name}
+                                    fill
+                                    priority
+                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                    sizes="48px"
+                                  />
+                                ) : (
+                                  <Package className="w-5 h-5 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                                  {category.name}
+                                </h4>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-border flex justify-center">
+                        <Link
+                          href="/categories"
+                          className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                        >
+                          Tüm Kategorileri Gör <ChevronDown className="w-4 h-4 -rotate-90" />
+                        </Link>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Koleksiyonlar Mega Menu */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent focus:bg-transparent text-muted-foreground hover:text-primary transition-colors text-sm font-medium px-4">
+                    Koleksiyonlar
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="w-[700px] p-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        {collections.slice(0, 4).map((collection) => (
+                          <Link
+                            key={collection.id}
+                            href={`/collections/${collection.slug}`}
+                            className="group relative block rounded-2xl overflow-hidden aspect-[16/9]"
+                          >
+                            <div className="absolute inset-0 bg-muted">
+                              {collection.image_url && (
+                                <Image
+                                  src={collection.image_url}
+                                  alt={collection.name}
+                                  fill
+                                  priority
+                                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                  sizes="300px"
+                                />
+                              )}
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+                              <h4 className="text-white font-bold text-lg leading-tight mb-1">
+                                {collection.name}
+                              </h4>
+                              {collection.description && (
+                                <p className="text-white/80 text-xs line-clamp-2">
+                                  {collection.description}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-border flex justify-center">
+                        <Link
+                          href="/collections"
+                          className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                        >
+                          Tüm Koleksiyonları Keşfet <ChevronDown className="w-4 h-4 -rotate-90" />
+                        </Link>
+                      </div>
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
           <SearchBar variant="desktop" />
           {/* Right Actions */}{" "}
@@ -312,17 +408,7 @@ export function Navbar({ categories = [] }: NavbarProps) {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="relative flex items-center justify-center flex-shrink-0 w-32 h-14">
-            <Image src="/yucel_avize_white_logo.png" alt="Yücel Avize Logo" fill sizes="150px" className="object-contain z-0" priority />
-            <div className="absolute inset-0 flex items-center justify-center text-[28px] font-black tracking-tighter leading-none">
-              <div className="relative">
-                <span aria-hidden="true" className="absolute inset-0 z-0 text-primary [-webkit-text-stroke:4px_currentColor] pointer-events-none select-none">
-                  yücelavize
-                </span>
-                <span className="relative z-10 text-white">
-                  yücelavize
-                </span>
-              </div>
-            </div>
+            <Image src="/yucel_avize_white_logo.png" alt="Yücel Avize Logo" fill sizes="150px" className="object-contain scale-110" priority />
           </Link>
 
           {/* Actions (Search Toggle, Cart) */}
