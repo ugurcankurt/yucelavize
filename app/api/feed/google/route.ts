@@ -1,42 +1,93 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+export const revalidate = 3600; // Cache for 1 hour
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   const baseUrl = "https://yucelavize.com";
-  
-  // In a real application, you fetch these products from Supabase
-  const products = [
-    {
-      id: "PRD-1",
-      title: "Kristal Modern Avize",
-      description: "Lüks kristal taşlı modern LED avize. Salonlar için uygundur.",
-      link: `${baseUrl}/products/kristal-modern-avize`,
-      image_link: "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=1500&auto=format&fit=crop", // Minimum 1500x1500 for 2026 specs
-      availability: "in_stock",
-      price: "3500.00 TRY",
-      brand: "Yücel Avize",
-      condition: "new",
-      google_product_category: "Home & Garden > Lighting > Chandeliers",
-      handling_cutoff_time: "15:00+03:00", // 2026 Spec: Daily deadline for order processing
-      minimum_order_value: "0.00 TRY", // 2026 Spec
-    },
-  ];
 
-  const xmlItems = products.map((product) => `
+  // Fetch all active products that are in stock
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("*, category:categories(name)")
+    .gt("stock", 0);
+
+  if (error) {
+    console.error("Error fetching products for XML feed:", error);
+    return new NextResponse("Error generating feed", { status: 500 });
+  }
+
+  if (!products) {
+    return new NextResponse("No products found", { status: 404 });
+  }
+
+  // Fetch active campaigns for dynamic pricing if applicable
+  const { data: activeCampaign } = await supabase
+    .from("campaigns")
+    .select("*")
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+
+  const xmlItems = products.map((product) => {
+    const hasProductDiscount = product.discounted_price && product.discounted_price < product.price;
+    let finalPrice = product.price;
+    let hasDiscount = false;
+
+    if (hasProductDiscount) {
+      finalPrice = product.discounted_price;
+      hasDiscount = true;
+    } else if (activeCampaign) {
+      hasDiscount = true;
+      if (activeCampaign.discount_type === "percentage") {
+        finalPrice = product.price - (product.price * activeCampaign.discount_amount) / 100;
+      } else {
+        finalPrice = Math.max(0, product.price - activeCampaign.discount_amount);
+      }
+    }
+
+    // Prepare description (strip HTML tags if any, limit length)
+    let description = (product.description || "").replace(/<[^>]*>?/gm, '');
+    if (description.length > 5000) {
+      description = description.substring(0, 4997) + '...';
+    }
+
+    // Determine category
+    const productType = product.category
+      ? Array.isArray(product.category)
+        ? product.category[0]?.name
+        : product.category.name
+      : "Ev ve Yaşam > Aydınlatma > Avizeler"; // Default fallback
+
+    const primaryImage = product.images && product.images[0] 
+      ? product.images[0] 
+      : "https://yucelavize.com/og-default.jpg";
+
+    return `
     <item>
-      <g:id>${product.id}</g:id>
-      <g:title><![CDATA[${product.title}]]></g:title>
-      <g:description><![CDATA[${product.description}]]></g:description>
-      <g:link>${product.link}</g:link>
-      <g:image_link>${product.image_link}</g:image_link>
-      <g:condition>${product.condition}</g:condition>
-      <g:availability>${product.availability}</g:availability>
-      <g:price>${product.price}</g:price>
-      <g:brand><![CDATA[${product.brand}]]></g:brand>
-      <g:google_product_category><![CDATA[${product.google_product_category}]]></g:google_product_category>
-      <g:handling_cutoff_time>${product.handling_cutoff_time}</g:handling_cutoff_time>
-      <g:minimum_order_value>${product.minimum_order_value}</g:minimum_order_value>
+      <g:id>${product.sku || product.id}</g:id>
+      <g:title><![CDATA[${product.name}]]></g:title>
+      <g:description><![CDATA[${description}]]></g:description>
+      <g:link>${baseUrl}/products/${product.slug}</g:link>
+      <g:image_link><![CDATA[${primaryImage}]]></g:image_link>
+      <g:condition>new</g:condition>
+      <g:availability>in_stock</g:availability>
+      <g:price>${product.price.toFixed(2)} TRY</g:price>
+      ${hasDiscount ? `<g:sale_price>${finalPrice.toFixed(2)} TRY</g:sale_price>` : ""}
+      <g:brand><![CDATA[Yücel Avize]]></g:brand>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:product_type><![CDATA[${productType}]]></g:product_type>
+      <g:shipping>
+        <g:country>TR</g:country>
+        <g:price>0.00 TRY</g:price>
+      </g:shipping>
     </item>
-  `).join("");
+  `}).join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
@@ -50,7 +101,7 @@ export async function GET() {
 
   return new NextResponse(xml, {
     headers: {
-      "Content-Type": "application/xml",
+      "Content-Type": "application/xml; charset=utf-8",
     },
   });
 }
