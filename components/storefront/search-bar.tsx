@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 interface SearchBarProps {
   variant?: "desktop" | "mobile";
@@ -89,6 +90,7 @@ export function SearchBar({ variant = "desktop", onMobileClose, isMobileOpen = f
     e.preventDefault();
     setShowResults(false);
     if (searchQuery.trim()) {
+      trackMetaEvent("Search", { search_string: searchQuery });
       router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
     } else {
       router.push(`/products`);

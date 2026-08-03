@@ -10,6 +10,7 @@ import { ProductActionSection } from "@/components/storefront/product-action-sec
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductReviews } from "@/components/storefront/product-reviews";
 import { ProductDescription } from "@/components/storefront/product-description";
+import { PixelViewContent } from "@/components/storefront/pixel-view-content";
 
 export const revalidate = 3600; // ISR cache for 1 hour
 
@@ -246,6 +247,7 @@ export default async function ProductDetailPage({
     : "Aydınlatma";
   return (
     <>
+      <PixelViewContent product={{ id: product.id, name: product.name, price: product.price }} />
       {" "}
       <script
         type="application/ld+json"

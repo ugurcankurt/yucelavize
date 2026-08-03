@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { incrementCouponUsage } from "@/app/actions/coupon";
 import { PageHero } from "@/components/storefront/page-hero";
 import { getCities, getDistricts } from "@/lib/data/turkey";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -76,6 +77,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     setMounted(true);
 
+    if (cart.items.length > 0) {
+      trackMetaEvent("InitiateCheckout", {
+        value: cart.getFinalTotal(),
+        currency: "TRY"
+      });
+    }
+
     async function fetchData() {
       const { data: settingsData } = await supabase
         .from("settings")
@@ -117,7 +125,8 @@ export default function CheckoutPage() {
     }
 
     fetchData();
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!mounted) return null;
 

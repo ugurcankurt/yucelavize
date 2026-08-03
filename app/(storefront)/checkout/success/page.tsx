@@ -1,12 +1,18 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  
+  useEffect(() => {
+    trackMetaEvent("Purchase", { currency: "TRY" });
+  }, []);
+
   return (
     <div className="max-w-xl mx-auto text-center space-y-6">
       {" "}

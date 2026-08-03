@@ -5,6 +5,7 @@ import { useCart, ProductType } from "@/hooks/use-cart";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 interface AddToCartButtonProps {
   product: ProductType;
   selectedColor?: string;
@@ -27,6 +28,13 @@ export function AddToCartButton({
     e.stopPropagation();
     if (disabled) return;
     cart.addItem(product, 1, selectedColor);
+    trackMetaEvent("AddToCart", {
+      content_name: product.name,
+      content_ids: [product.id],
+      content_type: "product",
+      value: product.price,
+      currency: "TRY"
+    });
     setIsAdded(true);
     
     if (onAdded) {
