@@ -1,6 +1,8 @@
 "use server";
 
 import { headers, cookies } from "next/headers";
+import crypto from "crypto";
+import { createClient } from "@/lib/supabase/server";
 
 interface CapiEventData {
   eventName: string;
@@ -34,6 +36,23 @@ export async function trackCapiEvent({
     const fbp = reqCookies.get("_fbp")?.value || "";
     const fbc = reqCookies.get("_fbc")?.value || "";
 
+    // Advanced Matching: Fetch logged-in user and hash email/phone
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    let em = undefined;
+    let ph = undefined;
+
+    if (user?.email) {
+      const normalizedEmail = user.email.trim().toLowerCase();
+      em = crypto.createHash('sha256').update(normalizedEmail).digest('hex');
+    }
+
+    if (user?.phone) {
+      const normalizedPhone = user.phone.replace(/\\D/g, "");
+      ph = crypto.createHash('sha256').update(normalizedPhone).digest('hex');
+    }
+
     const timestamp = Math.floor(Date.now() / 1000);
 
     const payload = {
@@ -49,6 +68,8 @@ export async function trackCapiEvent({
             client_user_agent: clientUserAgent,
             fbp: fbp || undefined,
             fbc: fbc || undefined,
+            em,
+            ph,
             ...userData,
           },
           custom_data: customData,
