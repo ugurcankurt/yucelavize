@@ -7,6 +7,7 @@ export interface ProductType {
   slug: string;
   price: number;
   images: string[];
+  stock: number;
 }
 
 export interface CartItem {
@@ -51,15 +52,19 @@ export const useCart = create<CartState>()(
         );
 
         if (existingItem) {
+          const newQuantity = Math.min(existingItem.quantity + quantity, product.stock);
           set({
             items: currentItems.map((item) =>
               item.product.id === product.id && item.color === color
-                ? { ...item, quantity: item.quantity + quantity }
+                ? { ...item, quantity: newQuantity }
                 : item
             ),
           });
         } else {
-          set({ items: [...currentItems, { product, quantity, color }] });
+          const addQuantity = Math.min(quantity, product.stock);
+          if (addQuantity > 0) {
+            set({ items: [...currentItems, { product, quantity: addQuantity, color }] });
+          }
         }
         
         // Automatically open cart when an item is added
@@ -75,15 +80,20 @@ export const useCart = create<CartState>()(
       },
 
       updateQuantity: (productId, quantity, color) => {
-        const newQuantity = Math.max(1, quantity);
+        const currentItems = get().items;
+        const itemToUpdate = currentItems.find(i => i.product.id === productId && i.color === color);
         
-        set({
-          items: get().items.map((item) =>
-            item.product.id === productId && item.color === color 
-              ? { ...item, quantity: newQuantity } 
-              : item
-          ),
-        });
+        if (itemToUpdate) {
+            const newQuantity = Math.min(Math.max(1, quantity), itemToUpdate.product.stock);
+            
+            set({
+              items: currentItems.map((item) =>
+                item.product.id === productId && item.color === color 
+                  ? { ...item, quantity: newQuantity } 
+                  : item
+              ),
+            });
+        }
       },
 
       clearCart: () => set({ items: [], appliedCoupon: null }),

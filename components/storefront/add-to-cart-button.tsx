@@ -28,6 +28,19 @@ export function AddToCartButton({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (disabled) return;
+
+    const currentItem = cart.items.find(item => item.product.id === product.id && item.color === selectedColor);
+    const currentQuantity = currentItem ? currentItem.quantity : 0;
+    
+    if (currentQuantity >= product.stock) {
+      toast.add({
+        title: "Stok Yetersiz",
+        description: `Bu üründen en fazla ${product.stock} adet ekleyebilirsiniz.`,
+        type: "error",
+      } as any);
+      return;
+    }
+
     cart.addItem(product, 1, selectedColor);
     trackMetaEvent("AddToCart", {
       content_name: product.name,

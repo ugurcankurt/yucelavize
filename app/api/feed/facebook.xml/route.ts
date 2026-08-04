@@ -70,6 +70,27 @@ export async function GET() {
       ? product.images[0] 
       : "https://yucelavize.com/og-default.jpg";
 
+    const additionalImages = product.images && product.images.length > 1
+      ? product.images.slice(1).map((img: string) => `<g:additional_image_link><![CDATA[${img}]]></g:additional_image_link>`).join('\n      ')
+      : "";
+
+    const mpn = product.sku ? `<g:mpn><![CDATA[${product.sku}]]></g:mpn>` : "";
+
+    let color = "";
+    let material = "";
+
+    if (product.features && typeof product.features === 'object') {
+      const featureKeys = Object.keys(product.features);
+      const colorKey = featureKeys.find(k => k.toLowerCase() === 'renk' || k.toLowerCase() === 'color');
+      if (colorKey) {
+        color = `<g:color><![CDATA[${product.features[colorKey]}]]></g:color>`;
+      }
+      const materialKey = featureKeys.find(k => k.toLowerCase() === 'malzeme' || k.toLowerCase() === 'materyal' || k.toLowerCase() === 'material');
+      if (materialKey) {
+        material = `<g:material><![CDATA[${product.features[materialKey]}]]></g:material>`;
+      }
+    }
+
     const availability = product.stock > 0 ? "in_stock" : "out_of_stock";
 
     return `
@@ -84,8 +105,12 @@ export async function GET() {
       <g:price>${product.price.toFixed(2)} TRY</g:price>
       ${hasDiscount ? `<g:sale_price>${finalPrice.toFixed(2)} TRY</g:sale_price>` : ""}
       <g:brand><![CDATA[Yücel Avize]]></g:brand>
+      ${mpn}
+      ${color}
+      ${material}
       <g:product_type><![CDATA[${productType}]]></g:product_type>
       <g:inventory>${product.stock}</g:inventory>
+      ${additionalImages}
     </item>
   `}).join("");
 

@@ -378,7 +378,8 @@ export function CartIcon({ className, iconClassName, badgeClassName, hideDrawer 
                               item.color,
                             )
                           }
-                          className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+                          disabled={item.quantity >= item.product.stock}
+                          className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors disabled:opacity-30 disabled:hover:text-muted-foreground disabled:cursor-not-allowed"
                         >
                           {" "}
                           <Plus className="w-3 h-3" />{" "}

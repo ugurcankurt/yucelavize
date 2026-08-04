@@ -352,6 +352,7 @@ export default async function ProductDetailPage({
                   slug: product.slug,
                   price: finalPrice,
                   images: images,
+                  stock: product.stock,
                 }}
                 variations={product.features?.variations || product.features?.colors}
               />
