@@ -305,13 +305,6 @@ export default function CheckoutPage() {
         body: JSON.stringify({ orderId }),
       }).catch(err => console.error("Email API call failed:", err));
 
-      // Trigger WhatsApp sending asynchronously (don't await so it doesn't block UI)
-      fetch("/api/whatsapp/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-      }).catch(err => console.error("WhatsApp API call failed:", err));
-
       // Increment coupon usage
       if (couponCode) {
         incrementCouponUsage(couponCode).catch(console.error);
