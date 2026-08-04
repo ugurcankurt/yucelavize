@@ -25,6 +25,23 @@ export async function GET() {
     return new NextResponse("No products found", { status: 404 });
   }
 
+  // Fetch all approved reviews to calculate average ratings
+  const { data: reviews } = await supabase
+    .from("reviews")
+    .select("product_id, rating")
+    .eq("status", "approved");
+
+  const reviewStats: Record<string, { count: number, total: number }> = {};
+  if (reviews) {
+    reviews.forEach(r => {
+      if (!reviewStats[r.product_id]) {
+        reviewStats[r.product_id] = { count: 0, total: 0 };
+      }
+      reviewStats[r.product_id].count += 1;
+      reviewStats[r.product_id].total += r.rating;
+    });
+  }
+
   // Fetch active campaigns for dynamic pricing if applicable
   const { data: activeCampaign } = await supabase
     .from("campaigns")
@@ -91,6 +108,23 @@ export async function GET() {
       }
     }
 
+    let size = "";
+    if (product.features?.dimensions) {
+      const { width, height, depth } = product.features.dimensions;
+      if (width || height || depth) {
+        size = `<g:size><![CDATA[${[width, height, depth].filter(Boolean).join('x')} cm]]></g:size>`;
+      }
+    }
+
+    const productReviews = reviewStats[product.id];
+    let averageRating = "";
+    let reviewCount = "";
+    if (productReviews && productReviews.count > 0) {
+      const avg = (productReviews.total / productReviews.count).toFixed(1);
+      averageRating = `<g:custom_label_0><![CDATA[Puan: ${avg}]]></g:custom_label_0>`;
+      reviewCount = `<g:custom_label_1><![CDATA[Değerlendirme: ${productReviews.count}]]></g:custom_label_1>`;
+    }
+
     const availability = product.stock > 0 ? "in_stock" : "out_of_stock";
 
     return `
@@ -98,6 +132,7 @@ export async function GET() {
       <g:id>${product.id}</g:id>
       <g:title><![CDATA[${product.name}]]></g:title>
       <g:description><![CDATA[${description}]]></g:description>
+      <g:rich_text_description><![CDATA[${product.description || ""}]]></g:rich_text_description>
       <g:link>${baseUrl}/products/${product.slug}</g:link>
       <g:image_link><![CDATA[${primaryImage}]]></g:image_link>
       <g:condition>new</g:condition>
@@ -108,8 +143,17 @@ export async function GET() {
       ${mpn}
       ${color}
       ${material}
+      ${size}
       <g:product_type><![CDATA[${productType}]]></g:product_type>
+      <g:google_product_category><![CDATA[Ev ve Yaşam > Aydınlatma > Avizeler]]></g:google_product_category>
       <g:inventory>${product.stock}</g:inventory>
+      <g:return_policy_label><![CDATA[14 Gün İade]]></g:return_policy_label>
+      <g:shipping>
+        <g:country>TR</g:country>
+        <g:price>0.00 TRY</g:price>
+      </g:shipping>
+      ${averageRating}
+      ${reviewCount}
       ${additionalImages}
     </item>
   `}).join("");
