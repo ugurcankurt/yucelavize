@@ -5,13 +5,18 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { trackGAEvent } from "@/lib/google-analytics";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   
   useEffect(() => {
     trackMetaEvent("Purchase", { currency: "TRY" });
-  }, []);
+    trackGAEvent("purchase", {
+      currency: "TRY",
+      transaction_id: orderId || undefined,
+    });
+  }, [orderId]);
 
   return (
     <div className="max-w-xl mx-auto text-center space-y-6">

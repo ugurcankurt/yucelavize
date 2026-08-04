@@ -13,6 +13,7 @@ import { incrementCouponUsage } from "@/app/actions/coupon";
 import { PageHero } from "@/components/storefront/page-hero";
 import { getCities, getDistricts } from "@/lib/data/turkey";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { trackGAEvent } from "@/lib/google-analytics";
 
 export default function CheckoutPage() {
   const cart = useCart();
@@ -81,6 +82,16 @@ export default function CheckoutPage() {
       trackMetaEvent("InitiateCheckout", {
         value: cart.getFinalTotal(),
         currency: "TRY"
+      });
+      trackGAEvent("begin_checkout", {
+        currency: "TRY",
+        value: cart.getFinalTotal(),
+        items: cart.items.map((item) => ({
+          item_id: item.product.id,
+          item_name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+        })),
       });
     }
 

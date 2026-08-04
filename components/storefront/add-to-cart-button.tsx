@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { trackGAEvent } from "@/lib/google-analytics";
 interface AddToCartButtonProps {
   product: ProductType;
   selectedColor?: string;
@@ -34,6 +35,18 @@ export function AddToCartButton({
       content_type: "product",
       value: product.price,
       currency: "TRY"
+    });
+    trackGAEvent("add_to_cart", {
+      currency: "TRY",
+      value: product.price,
+      items: [
+        {
+          item_id: product.id,
+          item_name: product.name,
+          price: product.price,
+          quantity: 1,
+        }
+      ]
     });
     setIsAdded(true);
     

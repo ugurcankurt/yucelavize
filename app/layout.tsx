@@ -6,7 +6,8 @@ import { Toaster } from "@/components/ui/toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
-
+import { TrackingProvider } from "@/components/storefront/tracking-provider";
+import { CookieConsent } from "@/components/storefront/cookie-consent";
 const ralewayHeading = Raleway({ subsets: ['latin'], variable: '--font-heading' });
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
@@ -83,31 +84,38 @@ export default function RootLayout({
             }).replace(/</g, '\\u003c')
           }}
         />
-        {/* Meta Pixel Code */}
-        <Script id="meta-pixel" strategy="afterInteractive">
+        {/* Google Consent Mode V2 Default State */}
+        <Script id="consent-mode-default" strategy="beforeInteractive">
           {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '2110321059606201');
-            fbq('track', 'PageView');
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              'ad_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied',
+              'analytics_storage': 'denied'
+            });
           `}
         </Script>
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=2110321059606201&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
-        {/* End Meta Pixel Code */}
+        
+        {/* Google Analytics GA4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BWR4LR7D1T"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BWR4LR7D1T', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+
+        <TrackingProvider />
+        <CookieConsent />
         {children}
         <Toaster />
         <Analytics />
