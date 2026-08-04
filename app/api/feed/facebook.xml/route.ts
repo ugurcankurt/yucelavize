@@ -11,11 +11,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export async function GET() {
   const baseUrl = "https://yucelavize.com";
 
-  // Fetch all active products
+  // Fetch all products
   const { data: products, error } = await supabase
     .from("products")
-    .select("*, category:categories(name)")
-    .eq("is_active", true); // Fetch all active products, regardless of stock
+    .select("*, category:categories(name)");
 
   if (error) {
     console.error("Error fetching products for Facebook XML feed:", error);
