@@ -50,6 +50,12 @@ export async function generateMetadata({
       images: [{ url: primaryImage }],
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: product.description.substring(0, 160),
+      images: [primaryImage],
+    },
     alternates: {
       canonical: `https://www.yucelavize.com/products/${resolvedParams.slug}`,
     },

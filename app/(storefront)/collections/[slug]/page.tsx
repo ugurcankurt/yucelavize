@@ -24,6 +24,16 @@ export async function generateMetadata({ params }: CollectionPageProps): Promise
   return {
     title: `${collection.name} | Yücel Avize`,
     description: collection.description || `${collection.name} koleksiyonundaki en şık ürünleri keşfedin.`,
+    openGraph: {
+      title: `${collection.name} | Yücel Avize`,
+      description: collection.description || `${collection.name} koleksiyonundaki en şık ürünleri keşfedin.`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${collection.name} | Yücel Avize`,
+      description: collection.description || `${collection.name} koleksiyonundaki en şık ürünleri keşfedin.`,
+    },
   };
 }
 

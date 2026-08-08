@@ -29,6 +29,28 @@ export const metadata: Metadata = {
     "Türkiye'nin premium avize mağazası. En şık, modern ve klasik avize modelleriyle evinizi aydınlatın.",
   keywords:
     "avize, premium avize, lüks aydınlatma, modern avize, klasik avize, yücel avize",
+  openGraph: {
+    title: "Yücel Avize | Premium Aydınlatma ve Avize Modelleri",
+    description: "Türkiye'nin premium avize mağazası. En şık, modern ve klasik avize modelleriyle evinizi aydınlatın.",
+    url: "https://www.yucelavize.com",
+    siteName: "Yücel Avize",
+    images: [
+      {
+        url: "https://www.yucelavize.com/yucel_avize_sefakoy.webp",
+        width: 1200,
+        height: 630,
+        alt: "Yücel Avize Premium Aydınlatma",
+      }
+    ],
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Yücel Avize | Premium Aydınlatma ve Avize Modelleri",
+    description: "Türkiye'nin premium avize mağazası. En şık, modern ve klasik avize modelleriyle evinizi aydınlatın.",
+    images: ["https://www.yucelavize.com/yucel_avize_sefakoy.webp"],
+  },
 };
 
 export default function RootLayout({
