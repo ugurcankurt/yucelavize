@@ -47,8 +47,8 @@ export async function generateMetadata(
     },
     alternates: {
       canonical: categorySlug 
-        ? `https://yucelavize.com/products?category=${categorySlug}`
-        : `https://yucelavize.com/products`,
+        ? `https://www.yucelavize.com/products?category=${categorySlug}`
+        : `https://www.yucelavize.com/products`,
     },
   };
 }
@@ -147,7 +147,7 @@ export default async function ProductsPage({
     "itemListElement": (products || []).map((product, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://yucelavize.com/products/${product.slug}`
+      "url": `https://www.yucelavize.com/products/${product.slug}`
     }))
   };
 

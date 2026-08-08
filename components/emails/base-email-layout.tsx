@@ -8,7 +8,7 @@ import {
   Img,
   Row,
   Column,
-} from "@react-email/components";
+} from "react-email";
 import * as React from "react";
 import { sharedStyles } from "./shared-styles";
 
@@ -23,7 +23,7 @@ export const BaseEmailLayout = ({ previewText, theme = "storefront", children }:
   
   // Base URL is required for images in emails. 
   // For local development it might break in real email clients but works fine in preview.
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://yucelavize.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.yucelavize.com";
 
   return (
     <Html>

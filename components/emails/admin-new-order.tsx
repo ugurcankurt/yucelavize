@@ -1,4 +1,4 @@
-import { Heading, Hr, Section, Text, Img } from "@react-email/components";
+import { Heading, Hr, Section, Text, Img } from "react-email";
 import * as React from "react";
 import { BaseEmailLayout } from "./base-email-layout";
 import { sharedStyles } from "./shared-styles";

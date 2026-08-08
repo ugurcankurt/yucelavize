@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const baseUrl = "https://yucelavize.com";
+  const baseUrl = "https://www.yucelavize.com";
   
   // Facebook Meta Business Catalog XML format is very similar to Google Merchant Center
   const products = [

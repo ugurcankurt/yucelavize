@@ -93,7 +93,7 @@ export default async function BlogPostPage({ params }: Props) {
     "author": [{
       "@type": "Person",
       "name": "Yücel Avize",
-      "url": "https://yucelavize.com/hakkimizda"
+      "url": "https://www.yucelavize.com/hakkimizda"
     }]
   };
 

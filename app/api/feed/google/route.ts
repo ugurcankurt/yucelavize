@@ -9,7 +9,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  const baseUrl = "https://yucelavize.com";
+  const baseUrl = "https://www.yucelavize.com";
 
   // Fetch all active products that are in stock
   const { data: products, error } = await supabase
@@ -66,7 +66,7 @@ export async function GET() {
 
     const primaryImage = product.images && product.images[0] 
       ? product.images[0] 
-      : "https://yucelavize.com/og-default.jpg";
+      : "https://www.yucelavize.com/og-default.jpg";
 
     return `
     <item>

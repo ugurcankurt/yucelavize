@@ -1,4 +1,4 @@
-import { Text, Button, Section } from "@react-email/components";
+import { Text, Button, Section } from "react-email";
 import * as React from "react";
 import { BaseEmailLayout } from "./base-email-layout";
 import { sharedStyles } from "./shared-styles";
@@ -15,7 +15,7 @@ export const WelcomeEmail = ({ customerName }: WelcomeEmailProps) => {
         Yücel Avize ailesine katıldığınız için teşekkür ederiz. Hesabınız başarıyla oluşturuldu. Artık siparişlerinizi kolayca takip edebilir ve yeni alışverişlerinizde daha hızlı işlem yapabilirsiniz.
       </Text>
       <Section style={{ textAlign: "center", marginTop: "32px", marginBottom: "32px" }}>
-        <Button href={`https://yucelavize.com/account`} style={sharedStyles.button}>
+        <Button href={`https://www.yucelavize.com/account`} style={sharedStyles.button}>
           Hesabıma Git
         </Button>
       </Section>

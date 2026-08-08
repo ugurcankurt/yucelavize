@@ -9,7 +9,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
-  const baseUrl = "https://yucelavize.com";
+  const baseUrl = "https://www.yucelavize.com";
 
   // Fetch all products
   const { data: products, error } = await supabase
@@ -83,9 +83,9 @@ export async function GET() {
         : (product.category as any).name
       : "Ev ve Yaşam > Aydınlatma > Avizeler"; // Default fallback
 
-    const primaryImage = product.images && product.images[0] 
-      ? product.images[0] 
-      : "https://yucelavize.com/og-default.jpg";
+    const primaryImage = product.images?.[0]
+      ? product.images[0]
+      : "https://www.yucelavize.com/og-default.jpg";
 
     const additionalImages = product.images && product.images.length > 1
       ? product.images.slice(1).map((img: string) => `<g:additional_image_link><![CDATA[${img}]]></g:additional_image_link>`).join('\n      ')

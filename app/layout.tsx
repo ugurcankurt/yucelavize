@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://yucelavize.com'),
+  metadataBase: new URL('https://www.yucelavize.com'),
   title: "Yücel Avize | Premium Aydınlatma ve Avize Modelleri",
   description:
     "Türkiye'nin premium avize mağazası. En şık, modern ve klasik avize modelleriyle evinizi aydınlatın.",
@@ -57,9 +57,9 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Store",
               "name": "Yücel Avize",
-              "url": "https://yucelavize.com",
-              "logo": "https://yucelavize.com/yucel_avize_logo.webp",
-              "image": "https://yucelavize.com/yucel_avize_sefakoy.webp",
+              "url": "https://www.yucelavize.com",
+              "logo": "https://www.yucelavize.com/yucel_avize_logo.webp",
+              "image": "https://www.yucelavize.com/yucel_avize_sefakoy.webp",
               "description": "Türkiye'nin premium aydınlatma mağazası. En şık, modern ve klasik avize modelleri.",
               "address": {
                 "@type": "PostalAddress",

@@ -26,7 +26,7 @@ export default async function CollectionsPage() {
     "itemListElement": (collections || []).map((collection, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://yucelavize.com/collections/${collection.slug}`
+      "url": `https://www.yucelavize.com/collections/${collection.slug}`
     }))
   };
 

@@ -40,7 +40,7 @@ export async function generateMetadata({
     return { title: "Ürün Bulunamadı" };
   }
   const primaryImage =
-    product.images?.[0] || "https://yucelavize.com/og-default.jpg";
+    product.images?.[0] || "https://www.yucelavize.com/og-default.jpg";
   return {
     title: `${product.name} | Yücel Avize`,
     description: product.description.substring(0, 160),
@@ -51,7 +51,7 @@ export async function generateMetadata({
       type: "website",
     },
     alternates: {
-      canonical: `https://yucelavize.com/products/${resolvedParams.slug}`,
+      canonical: `https://www.yucelavize.com/products/${resolvedParams.slug}`,
     },
   };
 }
@@ -224,7 +224,7 @@ export default async function ProductDetailPage({
     brand: { "@type": "Brand", name: "Yücel Avize" },
     offers: {
       "@type": "Offer",
-      url: `https://yucelavize.com/products/${product.slug}`,
+      url: `https://www.yucelavize.com/products/${product.slug}`,
       priceCurrency: "TRY",
       price: finalPrice,
       priceValidUntil: validUntil.toISOString().split('T')[0],

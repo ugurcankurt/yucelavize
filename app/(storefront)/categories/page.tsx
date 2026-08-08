@@ -19,7 +19,7 @@ export default async function CategoriesPage() {
     "itemListElement": (categories || []).map((category, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://yucelavize.com/products?category=${category.slug}`
+      "url": `https://www.yucelavize.com/products?category=${category.slug}`
     }))
   };
 

@@ -1,4 +1,4 @@
-import { Heading, Hr, Link, Section, Text } from "@react-email/components";
+import { Heading, Hr, Link, Section, Text } from "react-email";
 import * as React from "react";
 import { BaseEmailLayout } from "./base-email-layout";
 import { sharedStyles } from "./shared-styles";
@@ -73,7 +73,7 @@ export const OrderStatusUpdateEmail = ({
             Siparişiniz başarıyla teslim edildi. Satın aldığınız ürünleri web sitemiz üzerinden bularak sayfasında değerlendirebilir ve diğer müşterilerimize yardımcı olabilirsiniz!
           </Text>
           <Section style={{ textAlign: 'center', marginTop: '16px' }}>
-            <Link href="https://yucelavize.com/account" style={sharedStyles.buttonOutline}>
+            <Link href="https://www.yucelavize.com/account" style={sharedStyles.buttonOutline}>
               Siparişlerime Git
             </Link>
           </Section>
