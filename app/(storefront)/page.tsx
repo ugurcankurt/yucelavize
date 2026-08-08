@@ -16,9 +16,11 @@ import {
   getCachedHomeBanners,
   getCachedBrands,
   getCachedLatestBlogs,
-  getCachedPhotoReviews
+  getCachedPhotoReviews,
+  getCachedCollections
 } from "@/lib/services/public-data";
 import { buttonVariants } from "@/components/ui/button";
+import { Package } from "lucide-react";
 
 export default async function Home() {
   const photoReviews = await getCachedPhotoReviews();
@@ -31,6 +33,7 @@ export default async function Home() {
   const banners = await getCachedHomeBanners();
   const brands = await getCachedBrands();
   const latestBlogs = await getCachedLatestBlogs(2);
+  const collections = await getCachedCollections(4);
 
   const largeBanner = banners?.find(b => b.is_large);
   const smallBanners = banners?.filter(b => !b.is_large).slice(0, 2);
@@ -247,7 +250,68 @@ export default async function Home() {
       {/* 5. Photo Reviews Slider */}
       {photoReviews && photoReviews.length > 0 && (
         <PhotoReviewsSlider reviews={photoReviews} />
-      )}{" "}
+      )}
+
+      {/* 5.5 Shop by Collections */}
+      {collections && collections.length > 0 && (
+        <section className="w-full py-12 md:py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-between items-end mb-10">
+              <h2 className="text-[26px] font-bold text-foreground tracking-tight">
+                Koleksiyonlar
+              </h2>
+              <Link
+                href="/collections"
+                className="text-primary font-semibold text-sm hover:text-primary/80 transition-colors"
+              >
+                Tümünü Gör
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {collections.map((collection, index) => (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.slug}`}
+                  className="group relative flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
+                >
+                  {/* Image Section */}
+                  <div className="relative aspect-[4/3] w-full bg-muted overflow-hidden">
+                    {collection.image_url ? (
+                      <Image
+                        src={collection.image_url}
+                        alt={collection.name}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted/50">
+                        <Package className="w-12 h-12 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    {/* Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end">
+                    <h3 className="text-xl font-bold text-white mb-1 group-hover:-translate-y-1 transition-transform duration-300">
+                      {collection.name}
+                    </h3>
+                    {collection.description && (
+                      <p className="text-white/80 text-sm line-clamp-2 mt-1">
+                        {collection.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 6. Shop by Brands */}{" "}
       <section className="w-full py-12 md:py-20 border-y border-border bg-muted">
         {" "}

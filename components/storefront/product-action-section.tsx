@@ -6,6 +6,7 @@ import { AddToCartButton } from "./add-to-cart-button";
 import { ProductType } from "@/hooks/use-cart";
 import { toast } from "@/components/ui/toast";
 import { useProductStore } from "@/hooks/use-product-store";
+import { WhatsAppOrderButton } from "./whatsapp-order-button";
 
 interface ProductActionSectionProps {
   product: ProductType;
@@ -77,6 +78,12 @@ export function ProductActionSection({
           disabled={hasVariations && !selectedVariation}
         />
       </div>
+      
+      {/* WhatsApp Hızlı Sipariş Butonu */}
+      <WhatsAppOrderButton 
+        productName={product.name} 
+        disabled={hasVariations && !selectedVariation}
+      />
     </div>
   );
 }
