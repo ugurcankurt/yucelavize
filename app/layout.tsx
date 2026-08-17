@@ -100,7 +100,7 @@ export default function RootLayout({
                 "availableLanguage": "Turkish"
               },
               "sameAs": [
-                "https://instagram.com/yucelavize",
+                "https://instagram.com/yucelavizecom",
                 "https://facebook.com/yucelavize"
               ]
             }).replace(/</g, '\\u003c')
@@ -119,7 +119,7 @@ export default function RootLayout({
             });
           `}
         </Script>
-        
+
         {/* Google Analytics GA4 */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-BWR4LR7D1T"
