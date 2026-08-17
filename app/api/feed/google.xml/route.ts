@@ -68,6 +68,10 @@ export async function GET() {
       ? product.images[0] 
       : "https://www.yucelavize.com/og-default.jpg";
 
+    const additionalImages = product.images && product.images.length > 1
+      ? product.images.slice(1, 11).map((img: string) => `<g:additional_image_link><![CDATA[${img}]]></g:additional_image_link>`).join("\n      ")
+      : "";
+
     return `
     <item>
       <g:id>${product.sku || product.id}</g:id>
@@ -75,6 +79,7 @@ export async function GET() {
       <g:description><![CDATA[${description}]]></g:description>
       <g:link>${baseUrl}/products/${product.slug}</g:link>
       <g:image_link><![CDATA[${primaryImage}]]></g:image_link>
+      ${additionalImages}
       <g:condition>new</g:condition>
       <g:availability>in_stock</g:availability>
       <g:price>${product.price.toFixed(2)} TRY</g:price>
