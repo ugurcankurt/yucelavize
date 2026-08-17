@@ -74,11 +74,11 @@ export function CookieConsent() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-          <Button variant="outline" className="w-full md:w-auto" onClick={decline}>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+          <Button variant="outline" className="w-full sm:w-auto" onClick={decline}>
             Reddet
           </Button>
-          <Button className="w-full md:w-auto" onClick={accept}>
+          <Button className="w-full sm:w-auto" onClick={accept}>
             Kabul Et
           </Button>
         </div>
