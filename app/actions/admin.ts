@@ -13,6 +13,13 @@ export async function updateOrderStatus(orderId: string, status: string) {
   // const { data: { user } } = await supabase.auth.getUser();
   // if (!user || user.role !== 'admin') return { error: "Unauthorized" };
 
+  // Fetch current order to check previous status
+  const { data: currentOrder } = await supabase
+    .from("orders")
+    .select("status")
+    .eq("id", orderId)
+    .single();
+
   const { data: order, error } = await supabase
     .from("orders")
     .update({ status })
@@ -23,6 +30,33 @@ export async function updateOrderStatus(orderId: string, status: string) {
   if (error || !order) {
     console.error("Order status update failed:", error);
     return { error: error?.message || "Order not found" };
+  }
+
+  // Restore stock if the order is newly cancelled
+  if (currentOrder && currentOrder.status !== "cancelled" && status === "cancelled") {
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("product_id, quantity")
+      .eq("order_id", orderId);
+      
+    if (orderItems && orderItems.length > 0) {
+      for (const item of orderItems) {
+        // Fetch current stock
+        const { data: product } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", item.product_id)
+          .single();
+          
+        if (product) {
+          // Increment stock
+          await supabase
+            .from("products")
+            .update({ stock: product.stock + item.quantity })
+            .eq("id", item.product_id);
+        }
+      }
+    }
   }
 
   // Send Email
