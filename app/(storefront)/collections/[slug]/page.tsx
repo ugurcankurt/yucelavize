@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/storefront/product-card";
 import { PageHero } from "@/components/storefront/page-hero";
 import { Metadata } from "next";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { CollectionJsonLd } from "@/components/seo/collection-jsonld";
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
@@ -67,7 +69,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         discounted_price,
         images,
         is_featured,
-        category:categories(name)
+        category:categories(name, slug)
       )
     `)
     .eq("collection_id", collection.id);
@@ -78,6 +80,23 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
 
   return (
     <div className="w-full">
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Koleksiyonlar", url: "https://www.yucelavize.com/collections" },
+          { name: collection.name, url: `https://www.yucelavize.com/collections/${slug}` }
+        ]} 
+      />
+      <CollectionJsonLd
+        name={collection.name}
+        description={collection.description || `${collection.name} koleksiyonumuza ait ürünler`}
+        url={`https://www.yucelavize.com/collections/${slug}`}
+        imageUrl={collection.image_url}
+        products={products.map((p: any) => ({
+          name: p.name,
+          url: `https://www.yucelavize.com/products/${p.slug}`
+        }))}
+      />
       <PageHero
         title={collection.name}
         description={collection.description || `${collection.name} koleksiyonumuza ait ürünler`}

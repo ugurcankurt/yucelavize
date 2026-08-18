@@ -16,6 +16,22 @@ const nextConfig: NextConfig = {
     ],
   },
   reactCompiler: true,
+  async redirects() {
+    return [
+      {
+        source: '/products',
+        has: [
+          {
+            type: 'query',
+            key: 'category',
+            value: '(?<slug>.*)',
+          },
+        ],
+        destination: '/kategori/:slug',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

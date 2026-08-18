@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { Metadata, ResolvingMetadata } from "next";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 // Revalidate every hour
 export const revalidate = 3600;
@@ -102,6 +103,13 @@ export default async function BlogPostPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Blog", url: "https://www.yucelavize.com/blog" },
+          { name: post.title, url: `https://www.yucelavize.com/blog/${post.slug}` }
+        ]} 
       />
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <Link href="/blog" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-8 transition-colors">

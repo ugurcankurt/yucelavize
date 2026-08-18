@@ -102,7 +102,12 @@ export default function RootLayout({
               "sameAs": [
                 "https://instagram.com/yucelavizecom",
                 "https://facebook.com/yucelavize"
-              ]
+              ],
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.yucelavize.com/products?search={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
             }).replace(/</g, '\\u003c')
           }}
         />

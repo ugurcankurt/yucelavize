@@ -198,7 +198,7 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
                         {categories.slice(0, 6).map((category) => (
                           <Link
                             key={category.id}
-                            href={`/products?category=${category.slug}`}
+                            href={`/kategori/${category.slug}`}
                             className="group block"
                           >
                             <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors">
@@ -227,7 +227,7 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
                       </div>
                       <div className="mt-6 pt-4 border-t border-border flex justify-center">
                         <Link
-                          href="/categories"
+                          href="/kategori"
                           className="text-sm font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
                         >
                           Tüm Kategorileri Gör <ChevronDown className="w-4 h-4 -rotate-90" />

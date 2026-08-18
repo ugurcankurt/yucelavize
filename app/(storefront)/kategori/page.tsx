@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Package } from "lucide-react";
 import { Metadata } from "next";
 import { PageHero } from "@/components/storefront/page-hero";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
   title: "Tüm Kategoriler | Yücel Avize",
@@ -19,7 +20,7 @@ export default async function CategoriesPage() {
     "itemListElement": (categories || []).map((category, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://www.yucelavize.com/products?category=${category.slug}`
+      "url": `https://www.yucelavize.com/kategori/${category.slug}`
     }))
   };
 
@@ -28,6 +29,12 @@ export default async function CategoriesPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Tüm Kategoriler", url: "https://www.yucelavize.com/kategori" }
+        ]} 
       />
       <PageHero
         title="Tüm Kategoriler"
@@ -48,7 +55,7 @@ export default async function CategoriesPage() {
             {categories.map((category, index) => (
               <Link 
                 key={category.id} 
-                href={`/products?category=${category.slug}`}
+                href={`/kategori/${category.slug}`}
                 className="group relative flex flex-col bg-card border border-border/50 rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
               >
                 {/* Image Section */}

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Image from "next/image";
 import { Metadata } from "next";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
   title: "Blog | Yücel Avize",
@@ -26,6 +27,12 @@ export default async function BlogIndexPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-24">
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Blog", url: "https://www.yucelavize.com/blog" }
+        ]} 
+      />
       <div className="max-w-3xl mx-auto text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Blog & İlham</h1>
         <p className="text-lg text-muted-foreground">

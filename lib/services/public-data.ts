@@ -48,7 +48,7 @@ export const getCachedNewArrivals = unstable_cache(
   async (limit: number = 4) => {
     const { data } = await publicSupabase
       .from("products")
-      .select("id, name, slug, price, discounted_price, images, stock, category:categories(name), reviews(rating, status)")
+      .select("id, name, slug, price, discounted_price, images, stock, category:categories(name, slug), reviews(rating, status)")
       .order("created_at", { ascending: false })
       .limit(limit);
     return data;

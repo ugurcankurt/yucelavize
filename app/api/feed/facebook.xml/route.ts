@@ -14,7 +14,7 @@ export async function GET() {
   // Fetch all products
   const { data: products, error } = await supabase
     .from("products")
-    .select("*, category:categories(name)");
+    .select("*, category:categories(name, slug)");
 
   if (error) {
     console.error("Error fetching products for Facebook XML feed:", error);

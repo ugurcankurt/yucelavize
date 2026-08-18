@@ -33,6 +33,14 @@ export function ProductCard({
       : (product.category as any).name
     : "Aydınlatma";
 
+  const catSlug = product.category
+    ? Array.isArray(product.category)
+      ? (product.category as any)[0]?.slug
+      : (product.category as any).slug
+    : "kategorisiz";
+
+  const productUrl = `/kategori/${catSlug}/${product.slug}`;
+
   const hasProductDiscount = product.discounted_price && product.discounted_price < product.price;
   let finalPrice = product.price;
   let hasDiscount = false;
@@ -70,7 +78,7 @@ export function ProductCard({
             {images.map((img: string, index: number) => (
               <CarouselItem key={index} className="pl-0 relative w-full h-full">
                 <Link
-                  href={`/products/${product.slug}`}
+                  href={productUrl}
                   className="block w-full h-full relative cursor-pointer"
                   tabIndex={-1}
                 >
@@ -128,7 +136,7 @@ export function ProductCard({
         )}
       </div>
 
-      <Link href={`/products/${product.slug}`} className="flex-1 flex flex-col cursor-pointer">
+      <Link href={productUrl} className="flex-1 flex flex-col cursor-pointer">
         <CardContent className="px-3 pb-3 pt-3 sm:px-3 sm:pb-3.5 sm:pt-4 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-2 mb-0.5">
             <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">

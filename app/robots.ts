@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         "/*?in_stock=*"
       ],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap-index.xml`,
   };
 }

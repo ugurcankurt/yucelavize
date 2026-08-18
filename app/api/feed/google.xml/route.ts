@@ -14,7 +14,7 @@ export async function GET() {
   // Fetch all active products that are in stock
   const { data: products, error } = await supabase
     .from("products")
-    .select("*, category:categories(name)")
+    .select("*, category:categories(name, slug)")
     .gt("stock", 0);
 
   if (error) {

@@ -51,7 +51,7 @@ export default async function Home() {
               Kategoriler
             </h2>
             <Link
-              href="/categories"
+              href="/kategori"
               className="text-primary font-semibold text-sm hover:text-primary/80 transition-colors"
             >
               Tüm Kategoriler
@@ -61,7 +61,7 @@ export default async function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-6 md:pb-0 md:flex-1">
             {categories?.map((cat, index) => (
               <Link
-                href={`/products?category=${cat.slug}`}
+                href={`/kategori/${cat.slug}`}
                 key={cat.id}
                 className="relative aspect-[4/3] rounded-2xl overflow-hidden group shadow-sm border border-border/50"
               >

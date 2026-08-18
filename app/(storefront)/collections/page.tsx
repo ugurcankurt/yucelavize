@@ -4,6 +4,7 @@ import { Package } from "lucide-react";
 import { Metadata } from "next";
 import { PageHero } from "@/components/storefront/page-hero";
 import { createClient } from "@/lib/supabase/server";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
   title: "Tüm Koleksiyonlar | Yücel Avize",
@@ -35,6 +36,12 @@ export default async function CollectionsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Tüm Koleksiyonlar", url: "https://www.yucelavize.com/collections" }
+        ]} 
       />
       <PageHero
         title="Tüm Koleksiyonlar"

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ProductCard } from "@/components/storefront/product-card";
 import { ProductsFilter } from "@/components/storefront/products-filter";
 import { PageHero } from "@/components/storefront/page-hero";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 import { Metadata, ResolvingMetadata } from "next";
 
@@ -47,7 +48,7 @@ export async function generateMetadata(
     },
     alternates: {
       canonical: categorySlug 
-        ? `https://www.yucelavize.com/products?category=${categorySlug}`
+        ? `https://www.yucelavize.com/kategori/${categorySlug}`
         : `https://www.yucelavize.com/products`,
     },
   };
@@ -134,7 +135,7 @@ export default async function ProductsPage({
     : "Evinizin ışıltısını ortaya çıkaracak premium aydınlatma koleksiyonumuzu keşfedin.";
   const breadcrumbs = categoryData
     ? [
-        { label: "Koleksiyonlar", href: "/categories" },
+        { label: "Koleksiyonlar", href: "/kategori" },
         { label: categoryData.name },
       ]
     : resolvedSearchParams.search
@@ -156,6 +157,13 @@ export default async function ProductsPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+      />
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Ana Sayfa", url: "https://www.yucelavize.com" },
+          { name: "Tüm Ürünler", url: "https://www.yucelavize.com/products" },
+          ...(categoryData ? [{ name: categoryData.name, url: `https://www.yucelavize.com/kategori/${categoryData.slug}` }] : [])
+        ]} 
       />
       <PageHero
         title={pageTitle}
