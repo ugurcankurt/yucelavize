@@ -83,6 +83,8 @@ export default function RootLayout({
               "logo": "https://www.yucelavize.com/yucel_avize_logo.webp",
               "image": "https://www.yucelavize.com/yucel_avize_sefakoy.webp",
               "description": "Türkiye'nin premium aydınlatma mağazası. En şık, modern ve klasik avize modelleri.",
+              "priceRange": "$$",
+              "telephone": "+90-543-154-3457",
               "address": {
                 "@type": "PostalAddress",
                 "streetAddress": "Kartaltepe, Belediye Cd. No:3",
