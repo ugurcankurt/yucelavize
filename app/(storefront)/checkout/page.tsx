@@ -329,6 +329,15 @@ export default function CheckoutPage() {
 
       if (itemsError) {
         console.error("Order items creation failed:", itemsError);
+        // ROLLBACK: Delete the order if items failed (e.g. stock constraint violation)
+        await supabase.from("orders").delete().eq("id", orderId);
+        setIsSubmitting(false);
+        toast.add({
+          title: "Sipariş Tamamlanamadı",
+          description: "Bir veya birden fazla ürünün stoğu tükendiği için siparişiniz iptal edildi.",
+          type: "error",
+        } as any);
+        return;
       }
 
 
@@ -369,7 +378,11 @@ export default function CheckoutPage() {
     } else {
       console.error("Order creation failed:", orderError);
       setIsSubmitting(false);
-      alert("Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+      toast.add({
+        title: "Sistem Hatası",
+        description: "Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+        type: "error",
+      } as any);
     }
   };
 

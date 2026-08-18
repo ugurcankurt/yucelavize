@@ -57,6 +57,32 @@ export async function updateOrderStatus(orderId: string, status: string) {
         }
       }
     }
+  } 
+  // Decrease stock if an order is restored from a cancelled state back to an active state
+  else if (currentOrder && currentOrder.status === "cancelled" && status !== "cancelled") {
+    const { data: orderItems } = await supabase
+      .from("order_items")
+      .select("product_id, quantity")
+      .eq("order_id", orderId);
+      
+    if (orderItems && orderItems.length > 0) {
+      for (const item of orderItems) {
+        // Fetch current stock
+        const { data: product } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", item.product_id)
+          .single();
+          
+        if (product) {
+          // Decrement stock
+          await supabase
+            .from("products")
+            .update({ stock: product.stock - item.quantity })
+            .eq("id", item.product_id);
+        }
+      }
+    }
   }
 
   // Send Email
