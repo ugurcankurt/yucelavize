@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { trackMetaEvent } from "@/lib/meta-pixel";
+import { trackGAEvent } from "@/lib/google-analytics";
 
 interface WhatsAppOrderButtonProps {
   productName: string;
@@ -11,6 +13,18 @@ interface WhatsAppOrderButtonProps {
 
 export function WhatsAppOrderButton({ productName, productUrl, disabled }: WhatsAppOrderButtonProps) {
   const handleWhatsAppClick = () => {
+    // Track Lead generation (WhatsApp Click)
+    trackMetaEvent("Lead", {
+      content_name: productName,
+      content_category: "WhatsApp Order"
+    });
+    trackGAEvent("generate_lead", {
+      currency: "TRY",
+      value: 0,
+      event_category: "engagement",
+      event_label: "WhatsApp Order"
+    });
+
     // Phone number should ideally come from env variable, fallback to a placeholder
     const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "905000000000"; 
     const currentUrl = productUrl || (typeof window !== "undefined" ? window.location.href : "");

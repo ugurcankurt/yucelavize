@@ -310,6 +310,24 @@ export default function CheckoutPage() {
         incrementCouponUsage(couponCode).catch(console.error);
       }
 
+      // Track purchase for GA4 / Google Ads
+      trackMetaEvent("Purchase", {
+        value: cart.getFinalTotal(),
+        currency: "TRY"
+      });
+      trackGAEvent("purchase", {
+        transaction_id: orderId,
+        value: cart.getFinalTotal(),
+        currency: "TRY",
+        coupon: couponCode || undefined,
+        items: cart.items.map(item => ({
+          item_id: item.product.id,
+          item_name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity
+        }))
+      });
+
       // 5. Success
       setIsSubmitting(false);
       setIsSuccess(true);

@@ -138,6 +138,7 @@ export default function RootLayout({
             gtag('config', 'G-BWR4LR7D1T', {
               page_path: window.location.pathname,
             });
+            gtag('config', 'AW-18395561367');
           `}
         </Script>
 
