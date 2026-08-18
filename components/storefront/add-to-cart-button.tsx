@@ -90,8 +90,12 @@ export function AddToCartButton({
         className
       )}
     >
-      {" "}
-      {isAdded ? (
+      {product.stock <= 0 ? (
+        <>
+          {" "}
+          <ShoppingCart className={iconOnly ? "w-5 h-5 opacity-50" : "mr-2 w-5 h-5 opacity-50"} /> {!iconOnly && "Tükendi"}{" "}
+        </>
+      ) : isAdded ? (
         <>
           {" "}
           <Check className={iconOnly ? "w-5 h-5" : "mr-2 w-5 h-5"} /> {!iconOnly && "Sepete Eklendi"}{" "}

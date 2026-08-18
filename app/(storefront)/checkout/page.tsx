@@ -4,6 +4,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/toast";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -149,6 +150,39 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // 0. Live Stock Validation
+    if (cart.items.length > 0) {
+      const productIds = cart.items.map(item => item.product.id);
+      const { data: currentProducts, error: productsError } = await supabase
+        .from("products")
+        .select("id, name, stock")
+        .in("id", productIds);
+
+      if (productsError) {
+        console.error("Stock validation error:", productsError);
+        toast.add({
+          title: "Sistem Hatası",
+          description: "Ürün stokları kontrol edilirken bir hata oluştu.",
+          type: "error",
+        } as any);
+        setIsSubmitting(false);
+        return;
+      }
+
+      for (const item of cart.items) {
+        const dbProduct = currentProducts?.find(p => p.id === item.product.id);
+        if (!dbProduct || dbProduct.stock < item.quantity) {
+          toast.add({
+            title: "Stok Yetersiz",
+            description: `"${item.product.name}" ürünü stokta kalmamıştır veya yeterli stok yoktur.`,
+            type: "error",
+          } as any);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+    }
 
     let finalUserId = user?.id;
 

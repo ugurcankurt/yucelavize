@@ -75,14 +75,14 @@ export function ProductActionSection({
         <AddToCartButton
           product={product}
           selectedColor={selectedVariation || undefined}
-          disabled={hasVariations && !selectedVariation}
+          disabled={(hasVariations && !selectedVariation) || product.stock <= 0}
         />
       </div>
       
       {/* WhatsApp Hızlı Sipariş Butonu */}
       <WhatsAppOrderButton 
         productName={product.name} 
-        disabled={hasVariations && !selectedVariation}
+        disabled={(hasVariations && !selectedVariation) || product.stock <= 0}
       />
     </div>
   );
