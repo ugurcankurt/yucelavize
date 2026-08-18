@@ -12,7 +12,11 @@ export default function robots(): MetadataRoute.Robots {
         "/account/", 
         "/auth/", 
         "/api/",
-        "/*?*" // Optimize crawl budget: Block parameter-based URLs (sort, filter, etc.)
+        "/*?sort=*",
+        "/*?min_price=*",
+        "/*?max_price=*",
+        "/*?search=*",
+        "/*?in_stock=*"
       ],
     },
     sitemap: `${baseUrl}/sitemap.xml`,

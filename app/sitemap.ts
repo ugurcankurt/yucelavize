@@ -21,6 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, updated_at, image_url")
     .eq("is_published", true);
 
+  // Fetch all active collections
+  const { data: collections } = await supabase
+    .from("collections")
+    .select("slug, updated_at, image_url")
+    .eq("is_active", true);
+
   const productUrls = (products || []).map((product) => ({
     url: `${baseUrl}/products/${product.slug}`,
     lastModified: new Date(product.updated_at || Date.now()),
@@ -35,6 +41,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly" as const,
     priority: 0.9,
     ...(category.image_url ? { images: [category.image_url] } : {})
+  }));
+
+  const collectionUrls = (collections || []).map((collection) => ({
+    url: `${baseUrl}/collections/${collection.slug}`,
+    lastModified: new Date(collection.updated_at || Date.now()),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+    ...(collection.image_url ? { images: [collection.image_url] } : {})
   }));
 
   const blogUrls = (blogs || []).map((blog) => ({
@@ -65,12 +79,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/collections`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/blog`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
     ...categoryUrls,
+    ...collectionUrls,
     ...productUrls,
     ...blogUrls,
   ];
