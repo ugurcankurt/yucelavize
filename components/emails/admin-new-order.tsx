@@ -61,7 +61,10 @@ export const AdminNewOrderEmail = ({
         {items && items.length > 0 && (
           <div style={{ marginTop: "20px", marginBottom: "20px" }}>
             {items.map((item, index) => {
-              const imageUrl = item.product?.images?.[0] || "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=200&auto=format&fit=crop";
+              const rawImageUrl = item.product?.images?.[0] || "https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?q=80&w=200&auto=format&fit=crop";
+              const imageUrl = rawImageUrl.includes("supabase.co") 
+                ? `https://www.yucelavize.com/api/image-proxy?url=${encodeURIComponent(rawImageUrl)}`
+                : rawImageUrl;
               const productName = item.product?.name || "İsimsiz Ürün";
               const isLast = index === items.length - 1;
               
