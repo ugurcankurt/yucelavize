@@ -24,7 +24,18 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .from("orders")
     .update({ status })
     .eq("id", orderId)
-    .select()
+    .select(`
+      *,
+      order_items (
+        id,
+        quantity,
+        unit_price,
+        product:products (
+          name,
+          images
+        )
+      )
+    `)
     .single();
 
   if (error || !order) {
@@ -98,6 +109,10 @@ export async function updateOrderStatus(orderId: string, status: string) {
         trackingNumber: order.tracking_number,
         trackingUrl: order.tracking_url,
         shippingCompany: order.shipping_company,
+        totalAmount: order.total_amount,
+        couponCode: order.coupon_code,
+        discountTotal: order.discount_total,
+        items: order.order_items,
       }),
     });
   } catch (err) {
@@ -122,7 +137,18 @@ export async function updateOrderCargo(
       tracking_url: cargoData.tracking_url
     })
     .eq("id", orderId)
-    .select()
+    .select(`
+      *,
+      order_items (
+        id,
+        quantity,
+        unit_price,
+        product:products (
+          name,
+          images
+        )
+      )
+    `)
     .single();
 
   if (error || !order) {
@@ -143,6 +169,10 @@ export async function updateOrderCargo(
         trackingNumber: order.tracking_number,
         trackingUrl: order.tracking_url,
         shippingCompany: order.shipping_company,
+        totalAmount: order.total_amount,
+        couponCode: order.coupon_code,
+        discountTotal: order.discount_total,
+        items: order.order_items,
       }),
     });
   } catch (err) {
