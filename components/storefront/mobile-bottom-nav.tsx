@@ -44,7 +44,7 @@ export function MobileBottomNav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isProductPage = pathname.match(/^\/products\/[^/]+$/);
+  const isProductPage = pathname.match(/^\/products\/[^/]+$/) || pathname.match(/^\/kategori\/[^/]+\/[^/]+$/);
 
   const hasVariations = variations && variations.length > 0;
   const selectedVariation = searchParams.get("variation") || searchParams.get("color") || null;

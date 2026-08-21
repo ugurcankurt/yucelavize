@@ -168,10 +168,7 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
           <div className="flex items-center gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0 relative z-20 group">
-              <div className={cn(
-                "relative z-20 bg-background lg:bg-transparent flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-                isScrolled ? "scale-[1.35]" : "scale-100"
-              )}>
+              <div className="relative z-20 bg-background lg:bg-transparent flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
                 <Image src="/yucel_avize_logo.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
               </div>
               <div className={cn(
@@ -432,10 +429,7 @@ export function Navbar({ categories = [], collections = [] }: NavbarProps) {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0 relative z-20 group">
-            <div className={cn(
-              "relative z-20 flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-              isScrolled ? "scale-[1.32]" : "scale-100"
-            )}>
+            <div className="relative z-20 flex-shrink-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <Image src="/yucel_avize_logo_white.webp" alt="Yücel Avize Logo" width={62} height={62} className="object-contain" style={{ width: "auto", height: "auto" }} priority />
             </div>
             <div className={cn(
