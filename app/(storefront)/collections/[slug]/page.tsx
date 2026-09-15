@@ -5,6 +5,7 @@ import { PageHero } from "@/components/storefront/page-hero";
 import { Metadata } from "next";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { CollectionJsonLd } from "@/components/seo/collection-jsonld";
+import { getCachedActiveCampaign } from "@/lib/services/public-data";
 
 interface CollectionPageProps {
   params: Promise<{ slug: string }>;
@@ -54,6 +55,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   if (colError || !collection) {
     notFound();
   }
+
+  const activeCampaign = await getCachedActiveCampaign();
 
   // 2. Fetch products in this collection
   // Since we have a many-to-many relationship, we need to join collection_products with products
@@ -124,7 +127,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {products.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} activeCampaign={activeCampaign} />
                 ))}
               </div>
             )}

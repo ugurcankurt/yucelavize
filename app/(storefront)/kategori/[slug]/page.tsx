@@ -5,6 +5,7 @@ import { PageHero } from "@/components/storefront/page-hero";
 import { Metadata } from "next";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { CollectionJsonLd } from "@/components/seo/collection-jsonld";
+import { getCachedActiveCampaign } from "@/lib/services/public-data";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -59,6 +60,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   if (catError || !category) {
     notFound();
   }
+
+  const activeCampaign = await getCachedActiveCampaign();
 
   // 2. Fetch products in this category
   const { data: products, error: prodError } = await supabase
@@ -124,7 +127,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {safeProducts.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} activeCampaign={activeCampaign} />
                 ))}
               </div>
             )}
