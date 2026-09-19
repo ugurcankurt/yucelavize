@@ -22,6 +22,18 @@ export function TrackingProvider() {
     };
   }, []);
 
+  useEffect(() => {
+    if (consentGranted) {
+      // @ts-ignore - Library lacks typescript definitions
+      import("meta-capi-param-builder-clientjs")
+        .then((clientParamBuilder) => {
+          // Process and collect fbc, fbp, and client ip parameters into cookies
+          clientParamBuilder.processAndCollectAllParams(window.location.href).catch(console.error);
+        })
+        .catch(console.error);
+    }
+  }, [consentGranted]);
+
   if (!consentGranted) {
     return null; // Do not render tracking scripts if consent is not granted
   }

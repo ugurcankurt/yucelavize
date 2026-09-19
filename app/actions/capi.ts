@@ -1,7 +1,7 @@
 "use server";
 
 import { headers, cookies } from "next/headers";
-import crypto from "crypto";
+import { ParamBuilder } from "capi-param-builder-nodejs";
 import { createClient } from "@/lib/supabase/server";
 
 interface CapiEventData {
@@ -31,10 +31,48 @@ export async function trackCapiEvent({
     const reqHeaders = await headers();
     const reqCookies = await cookies();
 
-    const clientIpAddress = reqHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || reqHeaders.get("x-real-ip") || "";
+    const host = reqHeaders.get("host") || "";
+    const xForwardedFor = reqHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || reqHeaders.get("x-real-ip") || null;
+    const referer = reqHeaders.get("referer") || null;
     const clientUserAgent = reqHeaders.get("user-agent") || "";
-    const fbp = reqCookies.get("_fbp")?.value || "";
-    const fbc = reqCookies.get("_fbc")?.value || "";
+
+    const cookieObj: { [key: string]: string } = {};
+    reqCookies.getAll().forEach(cookie => {
+      cookieObj[cookie.name] = cookie.value;
+    });
+
+    const parsedUrl = new URL(eventSourceUrl, `https://${host}`);
+    const queryParams: { [key: string]: string } = {};
+    parsedUrl.searchParams.forEach((value, key) => {
+      queryParams[key] = value;
+    });
+
+    const paramBuilder = new ParamBuilder();
+    const cookiesToSet = paramBuilder.processRequest(
+      host,
+      queryParams,
+      cookieObj,
+      referer,
+      xForwardedFor,
+      null
+    );
+
+    // Attempt to set cookies back to the browser
+    try {
+      for (const cookie of cookiesToSet) {
+        reqCookies.set(cookie.name, cookie.value, { 
+          maxAge: cookie.maxAge, 
+          domain: cookie.domain,
+          path: '/'
+        });
+      }
+    } catch (e) {
+      // Ignore cookie set errors (e.g. if called outside of a mutation context)
+    }
+
+    const fbp = paramBuilder.getFbp() || undefined;
+    const fbc = paramBuilder.getFbc() || undefined;
+    const clientIpAddress = paramBuilder.getClientIpAddress() || "";
 
     // Advanced Matching: Fetch logged-in user and hash email/phone
     const supabase = await createClient();
@@ -44,13 +82,11 @@ export async function trackCapiEvent({
     let ph = undefined;
 
     if (user?.email) {
-      const normalizedEmail = user.email.trim().toLowerCase();
-      em = crypto.createHash('sha256').update(normalizedEmail).digest('hex');
+      em = paramBuilder.getNormalizedAndHashedPII(user.email, "email") || undefined;
     }
 
     if (user?.phone) {
-      const normalizedPhone = user.phone.replace(/\\D/g, "");
-      ph = crypto.createHash('sha256').update(normalizedPhone).digest('hex');
+      ph = paramBuilder.getNormalizedAndHashedPII(user.phone, "phone") || undefined;
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
